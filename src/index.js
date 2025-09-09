@@ -5,97 +5,101 @@ const app = express();
 
 // helper: setDeep(obj, ["a","b","0","c"], val) -> obj.a.b[0].c = val
 function setDeep(target, parts, value) {
-  let cur = target;
-  for (let i = 0; i < parts.length; i++) {
-    const k = parts[i];
-    const nextIsIndex = Number.isInteger(+parts[i + 1]);
-    const isLast = i === parts.length - 1;
+    let cur = target;
+    for (let i = 0; i < parts.length; i++) {
+        const k = parts[i];
+        const nextIsIndex = Number.isInteger(+parts[i + 1]);
+        const isLast = i === parts.length - 1;
 
-    if (isLast) {
-      cur[k] = value;
-    } else {
-      if (cur[k] == null) cur[k] = nextIsIndex ? [] : {};
-      cur = cur[k];
+        if (isLast) {
+            cur[k] = value;
+        } else {
+            if (cur[k] == null) cur[k] = nextIsIndex ? [] : {};
+            cur = cur[k];
+        }
     }
-  }
-  return target;
+    return target;
 }
 
 // Convierte "talk[update][0][chat_id]" -> ["talk","update","0","chat_id"]
 function keyToPath(key) {
-  // elimina "][" y los corchetes
-  const parts = key.replace(/\]/g, "").split("[");
-  // si empieza con algo tipo "talk[", split deja "talk" correcto; si no hay "[", queda la clave sola
-  return parts;
+    // elimina "][" y los corchetes
+    const parts = key.replace(/\]/g, "").split("[");
+    // si empieza con algo tipo "talk[", split deja "talk" correcto; si no hay "[", queda la clave sola
+    return parts;
 }
 
 app.post("/kommo/webhook", express.raw({ type: "*/*" }), (req, res) => {
-  const ctype = req.headers["content-type"] || "";
-  const raw = req.body ? req.body.toString("utf8") : "";
-  console.log("Content-Type:", ctype);
-  console.log("Raw body:", raw);
+    // --- parseo robusto (json o x-www-form-urlencoded con brackets) ---
+    const ctype = req.headers["content-type"] || "";
+    const raw = req.body ? req.body.toString("utf8") : "";
+    let body = null;
 
-  let body = null;
-
-  if (ctype.includes("application/json")) {
-    try { body = JSON.parse(raw); } catch {}
-  }
-
-  if (!body) {
-    // intentamos parsear x-www-form-urlencoded y mapear brackets
-    const params = new URLSearchParams(raw);
-    const nested = {};
-    for (const [k, v] of params.entries()) {
-      const path = keyToPath(k);
-      setDeep(nested, path, v);
+    if (ctype.includes("application/json")) {
+        try { body = JSON.parse(raw); } catch { body = null; }
     }
-    body = nested;
-  }
 
-  console.log("Parsed body:", JSON.stringify(body, null, 2));
+    function setDeep(target, parts, value) {
+        let cur = target;
+        for (let i = 0; i < parts.length; i++) {
+            const k = parts[i];
+            const nextIsIndex = Number.isInteger(+parts[i + 1]);
+            const last = i === parts.length - 1;
+            if (last) { cur[k] = value; }
+            else {
+                if (cur[k] == null) cur[k] = nextIsIndex ? [] : {};
+                cur = cur[k];
+            }
+        }
+        return target;
+    }
+    function keyToPath(key) { return key.replace(/\]/g, "").split("["); }
 
-  // ---- Extraer info útil (si viene message.add/update) ----
-  // Algunos webhooks traen message.add[0].text o message.add[0].message.text
-  const msgAdd = body?.message?.add?.[0] || body?.message?.update?.[0];
-  const talkUpd = body?.talk?.update?.[0];
+    if (!body) {
+        const params = new URLSearchParams(raw);
+        const nested = {};
+        for (const [k, v] of params.entries()) setDeep(nested, keyToPath(k), v);
+        body = nested;
+    }
 
-  const text =
-    msgAdd?.text ??
-    msgAdd?.message?.text ??
-    null;
+    // --- normalización: quedarnos SOLO con mensajes entrantes (message.add -> type: incoming) ---
+    const add = body?.message?.add;
+    const ev = Array.isArray(add) ? add.find(x => x?.type === "incoming") : null;
 
-  const entityId =
-    msgAdd?.entity_id ??
-    talkUpd?.entity_id ??
-    null;
+    if (!ev) {
+        // no es un mensaje entrante; ignoramos (pero confirmamos recepción)
+        return res.sendStatus(204);
+    }
 
-  const chatId =
-    msgAdd?.chat_id ??
-    talkUpd?.chat_id ??
-    null;
+    // construir payload “plano” y limpio
+    const normalized = {
+        text: ev.text ?? null,
+        chat_id: ev.chat_id ?? null,
+        talk_id: ev.talk_id ?? null,
+        entity_type: ev.entity_type ?? null,   // suele ser "lead"
+        entity_id: ev.entity_id ? String(ev.entity_id) : null,
+        contact_id: ev.contact_id ? String(ev.contact_id) : null,
+        origin: ev.origin ?? null,             // waba / facebook / etc.
+        created_at: ev.created_at ? Number(ev.created_at) : null, // epoch seg
+    };
 
-  const talkId =
-    msgAdd?.talk_id ??
-    talkUpd?.talk_id ??
-    null;
+    // si por alguna razón no hay texto, no seguimos
+    if (!normalized.text) return res.sendStatus(204);
 
-  console.log("Detectado →", {
-    text,
-    entityId,
-    chatId,
-    talkId,
-    origin: msgAdd?.origin ?? talkUpd?.origin ?? null,
-    type: msgAdd?.type ?? null,
-  });
+    // 🔎 log claro (solo lo necesario)
+    console.log("INCOMING MESSAGE →", normalized);
 
-  // Por ahora solo confirmamos recepción
-  res.sendStatus(204);
+    // (opcional, siguiente paso) reenviar al agente:
+    // await forwardToLaburen(normalized.text, { kommo: normalized });
+
+    return res.sendStatus(204);
 });
+
 
 // Healthcheck
 app.get("/", (_req, res) => res.send("Middleware Kommo ↔ Laburen corriendo OK"));
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor escuchando en http://localhost:${PORT}`);
+    console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
