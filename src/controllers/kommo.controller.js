@@ -1,6 +1,6 @@
 import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
-import { queryLaburen } from "../services/laburen.js";
+import { queryLaburen } from "../services/laburen.service.js";
 import { log } from "../logger.js";
 
 export async function kommoWebhook(req, res) {
