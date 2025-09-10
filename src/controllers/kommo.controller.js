@@ -1,32 +1,51 @@
 import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
+import { queryLaburen } from "../services/laburen.js";
 import { log } from "../logger.js";
 
-// Controlador del webhook de Kommo
-export function kommoWebhook(req, res) {
+export async function kommoWebhook(req, res) {
   try {
+    // Cuerpo RAW → tu parser decide (JSON o x-www-form-urlencoded con corchetes)
     const contentType = req.headers["content-type"] || "";
-    const raw = req.body ? req.body.toString("utf8") : "";
+    const raw =
+      typeof req.body === "string"
+        ? req.body
+        : req.body
+        ? req.body.toString("utf8")
+        : "";
 
-    // Parseo robusto (JSON o x-www-form-urlencoded con corchetes)
     const parsed = parseIncoming(raw, contentType);
-    // Extraemos SOLO lo que te sirve (y filtramos mensajes entrantes)
     const normalized = normalizeIncomingMessage(parsed);
 
-    if (!normalized) {
-      // No es un message.add entrante o no hay texto → confirmamos igual
-      return res.sendStatus(204);
-    }
+    if (!normalized) return res.sendStatus(204);
 
     log.info("INCOMING MESSAGE →", normalized);
 
-    // Próximo paso (cuando quieras): enviar al agente Laburen
-    // await forwardToLaburen(normalized.text, { kommo: normalized });
+    // Mapear IDs de Kommo → mantener el hilo en Laburen
+    const conversationId = String(
+      normalized.chatId ?? normalized.leadId ?? normalized.contactId ?? ""
+    );
+    const visitorId = String(normalized.contactId ?? normalized.leadId ?? "");
+
+    const data = await queryLaburen({
+      query: normalized.text,
+      conversationId,
+      visitorId,
+      metadata: {
+        kommo: {
+          contactId: normalized.contactId,
+          leadId: normalized.leadId,
+          chatId: normalized.chatId,
+        },
+      },
+    });
+
+    const answer = (data?.answer || "").trim();
+    log.info("LABUREN ANSWER →", answer);
 
     return res.sendStatus(204);
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
-    // Devolvemos 204 para que Kommo no reintente indefinidamente
-    return res.sendStatus(204);
+    return res.sendStatus(204);``
   }
 }
