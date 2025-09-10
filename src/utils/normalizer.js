@@ -12,6 +12,7 @@ export function normalizeIncomingMessage(parsed) {
     return {
       text: ev.text ?? null,
       chat_id: ev.chat_id ?? null,
+      chat_status: ev.chat_status ?? null,
       talk_id: ev.talk_id ?? null,
       entity_type: ev.entity_type ?? null, // "lead"
       entity_id: ev.entity_id ? String(ev.entity_id) : null,
