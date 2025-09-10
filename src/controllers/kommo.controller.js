@@ -14,6 +14,10 @@ export async function kommoWebhook(req, res) {
           ? req.body.toString("utf8")
           : "";
 
+
+    const parsed = parseIncoming(raw, contentType);
+    const normalized = normalizeIncomingMessage(parsed);
+
     const upd = Array.isArray(parsed?.talk?.update) ? parsed.talk.update[0] : parsed?.talk?.update;
     if (upd) {
       const payload = {
@@ -30,9 +34,6 @@ export async function kommoWebhook(req, res) {
       log.info("TALK UPDATE →", payload);
       return res.sendStatus(204);
     }
-
-    const parsed = parseIncoming(raw, contentType);
-    const normalized = normalizeIncomingMessage(parsed);
 
     if (!normalized) return res.sendStatus(204);
 
