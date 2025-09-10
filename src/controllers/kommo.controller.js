@@ -11,15 +11,13 @@ export async function kommoWebhook(req, res) {
       typeof req.body === "string"
         ? req.body
         : req.body
-        ? req.body.toString("utf8")
-        : "";
+          ? req.body.toString("utf8")
+          : "";
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
     if (!normalized) return res.sendStatus(204);
-
-    log.info("INCOMING MESSAGE →", normalized);
 
     // Mapear IDs de Kommo → mantener el hilo en Laburen
     const conversationId = String(
@@ -41,11 +39,13 @@ export async function kommoWebhook(req, res) {
     });
 
     const answer = (data?.answer || "").trim();
-    log.info("LABUREN ANSWER →", answer);
+    log.info(`
+      INCOMING MESSAGE → ${normalized}
+      LABUREN ANSWER → ${answer}`);
 
     return res.sendStatus(204);
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
-    return res.sendStatus(204);``
+    return res.sendStatus(204); ``
   }
 }
