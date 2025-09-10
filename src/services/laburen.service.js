@@ -1,6 +1,6 @@
 const BASE = process.env.LABUREN_BASE_URL;
 const AGENT_ID = process.env.LABUREN_AGENT_ID;
-const API_KEY  = process.env.LABUREN_API_KEY;
+const AUTHORIZATION  = process.env.LABUREN_AUTHORIZATION;
 
 export async function queryLaburen({ query, conversationId, visitorId, metadata, timeoutMs = 15000 }) {
 
@@ -11,7 +11,7 @@ export async function queryLaburen({ query, conversationId, visitorId, metadata,
     const res = await fetch(`${BASE}/agents/${AGENT_ID}/query`, {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${API_KEY}`,
+        "Authorization": `Bearer ${AUTHORIZATION}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ query, conversationId, visitorId, metadata }),
