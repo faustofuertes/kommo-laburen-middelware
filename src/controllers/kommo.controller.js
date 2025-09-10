@@ -39,9 +39,8 @@ export async function kommoWebhook(req, res) {
     });
 
     const answer = (data?.answer || "").trim();
-    log.info(`
-      INCOMING MESSAGE → ${normalized}
-      LABUREN ANSWER → ${answer}`);
+    log.info("INCOMING MESSAGE →", normalized);
+    log.info("LABUREN ANSWER →", answer);    
 
     return res.sendStatus(204);
   } catch (err) {
