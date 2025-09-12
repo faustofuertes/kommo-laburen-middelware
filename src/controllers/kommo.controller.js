@@ -14,26 +14,11 @@ export async function kommoWebhook(req, res) {
           ? req.body.toString("utf8")
           : "";
 
+    // 👇 agregado: imprime el body crudo en consola
+    console.log("WEBHOOK RAW BODY →", JSON.stringify(req.body, null, 2));
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
-
-    const upd = Array.isArray(parsed?.talk?.update) ? parsed.talk.update[0] : parsed?.talk?.update;
-    if (upd) {
-      const payload = {
-        talk_id: upd.talk_id ?? null,
-        chat_id: upd.chat_id ?? null,
-        entity_type: upd.entity_type ?? null,
-        entity_id: upd.entity_id ?? null,
-        contact_id: upd.contact_id ?? null,
-        is_in_work: upd.is_in_work === "1" || upd.is_in_work === 1,
-        is_read: upd.is_read === "1" || upd.is_read === 1,
-        origin: upd.origin ?? null,
-        updated_at: upd.updated_at ? Number(upd.updated_at) : null,
-      };
-      log.info("TALK UPDATE →", payload);
-      return res.sendStatus(204);
-    }
 
     if (!normalized) return res.sendStatus(204);
 
@@ -63,6 +48,6 @@ export async function kommoWebhook(req, res) {
     return res.sendStatus(204);
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
-    return res.sendStatus(204); ``
+    return res.sendStatus(204);
   }
 }
