@@ -14,11 +14,14 @@ export async function kommoWebhook(req, res) {
           ? req.body.toString("utf8")
           : "";
 
-    // 👇 agregado: imprime el body crudo en consola
-    console.log("WEBHOOK RAW BODY →", raw);
+
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
+
+    // 👇 agregado: imprime el body crudo en consola
+    console.log("WEBHOOK PARSED BODY →", JSON.stringify(parsed, null, 2));
+
 
     if (!normalized) return res.sendStatus(204);
 
