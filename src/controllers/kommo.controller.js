@@ -15,7 +15,7 @@ export async function kommoWebhook(req, res) {
           : "";
 
     // 👇 agregado: imprime el body crudo en consola
-    console.log("WEBHOOK RAW BODY →", JSON.stringify(req.body, null, 2));
+    console.log("WEBHOOK RAW BODY →", raw);
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
