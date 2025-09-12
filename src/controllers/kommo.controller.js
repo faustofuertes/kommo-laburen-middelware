@@ -20,8 +20,8 @@ export async function kommoWebhook(req, res) {
     const normalized = normalizeIncomingMessage(parsed);
 
     // 👇 agregado: imprime el body crudo en consola
-    const note = parsed?.leads?.note?.[0]?.note?.text || "";
-
+    const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
+    
     // log para verificar
     console.log("NOTE TEXT →", note);
 
