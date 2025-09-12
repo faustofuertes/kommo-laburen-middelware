@@ -20,8 +20,10 @@ export async function kommoWebhook(req, res) {
     const normalized = normalizeIncomingMessage(parsed);
 
     // 👇 agregado: imprime el body crudo en consola
-    console.log("WEBHOOK PARSED BODY →", JSON.stringify(parsed, null, 2));
+    const note = parsed?.leads?.note?.[0]?.note?.text || "";
 
+    // log para verificar
+    console.log("NOTE TEXT →", note);
 
     if (!normalized) return res.sendStatus(204);
 
@@ -31,18 +33,20 @@ export async function kommoWebhook(req, res) {
     );
     const visitorId = String(normalized.contactId ?? normalized.leadId ?? "");
 
-    const data = await queryLaburen({
-      query: normalized.text,
-      conversationId,
-      visitorId,
-      metadata: {
-        kommo: {
-          contactId: normalized.contactId,
-          leadId: normalized.leadId,
-          chatId: normalized.chatId,
+    if (!text || text === "seguir") {
+      const data = await queryLaburen({
+        query: normalized.text,
+        conversationId,
+        visitorId,
+        metadata: {
+          kommo: {
+            contactId: normalized.contactId,
+            leadId: normalized.leadId,
+            chatId: normalized.chatId,
+          },
         },
-      },
-    });
+      });
+    }
 
     const answer = (data?.answer || "").trim();
     log.info("INCOMING MESSAGE →", normalized);
