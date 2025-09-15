@@ -24,9 +24,8 @@ export async function kommoWebhook(req, res) {
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
     const elementId = parsed?.leads?.note?.[0]?.note?.element_id || ""
 
-    log.info("NOTA ->", note);
-    log.info("Element id ->", elementId);
     log.info("INCOMING MESSAGE →", normalized);
+    log.ing(normalized.element_id);
 
     if (note === "agente pausar") {
       idsPausados.add(elementId);
@@ -37,7 +36,7 @@ export async function kommoWebhook(req, res) {
       log.info(`El elemento ${elementId} ha sido reanudado.`);
       return res.sendStatus(204);
     } else {
-      log.info("Ninguna acccion de pausa o seguir detectada para la nota:", note);
+      log.info("Ninguna acccion detectada para la nota:", note);
     }
 
     if (!normalized) return res.sendStatus(204);
