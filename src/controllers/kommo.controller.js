@@ -12,8 +12,8 @@ export async function kommoWebhook(req, res) {
       typeof req.body === "string"
         ? req.body
         : req.body
-          ? req.body.toString("utf8")
-          : "";
+        ? req.body.toString("utf8")
+        : "";
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
@@ -22,21 +22,25 @@ export async function kommoWebhook(req, res) {
 
     // --- CASO: llega un NOTE (pausa / seguir) ---
     if (parsed?.leads?.note) {
-      log.info('Llego note.');
-      const noteContactId = parsed?.leads?.note?.contactId;
-      const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
+      const noteObj = parsed?.leads?.note?.[0]?.note || {};
+      const noteText = (noteObj.text || "").toLowerCase();
 
-      if (note === "agente parar") {
+      // Solo si el note corresponde a un contacto (element_type = "1")
+      let noteContactId = null;
+      if (noteObj.element_type === "1") {
+        noteContactId = String(noteObj.element_id || "");
+      }
+
+      if (noteText === "agente parar" && noteContactId) {
         idsPausados.add(noteContactId);
-        log.info(`Contacto ${noteContactId} pausado.`);
+        log.info(`Contacto ${noteContactId} pausado via NOTE`);
         return res.sendStatus(200);
-      }
-      else if (note === "agente seguir") {
+      } else if (noteText === "agente seguir" && noteContactId) {
         idsPausados.delete(noteContactId);
-        log.info(`Contacto ${noteContactId} reanudado.`);
+        log.info(`Contacto ${noteContactId} reanudado via NOTE`);
         return res.sendStatus(200);
-      }
-      else {
+      } else {
+        log.info(`Nota recibida (sin acción): ${noteText}`);
         return res.sendStatus(200);
       }
     }
@@ -44,10 +48,13 @@ export async function kommoWebhook(req, res) {
     // --- CASO: llega un MESSAGE ---
     if (parsed?.message?.add) {
       const msgContactId = String(normalized.contactId ?? "");
+      const text = (normalized.text || "").toLowerCase();
 
-      // Si está pausado → ignorar
+      // Si el contacto está pausado → ignorar
       if (idsPausados.has(msgContactId)) {
-        log.info(`Contacto ${msgContactId} está pausado → no se llama al agente`);
+        log.info(
+          `Contacto ${msgContactId} está pausado → no se llama al agente`
+        );
         return res.sendStatus(200);
       }
 
