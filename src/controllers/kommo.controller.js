@@ -28,6 +28,18 @@ export async function kommoWebhook(req, res) {
     log.info("Element id ->", elementId);
     log.info("INCOMING MESSAGE →", normalized);
 
+    if (note === "agente pausar") {
+      idsPausados.add(elementId);
+      log.info(`El elemento ${elementId} ha sido pausado.`);
+      return res.sendStatus(204);
+    } else if (note === "agente seguir") {
+      idsPausados.delete(elementId);
+      log.info(`El elemento ${elementId} ha sido reanudado.`);
+      return res.sendStatus(204);
+    } else {
+      log.info("Ninguna acccion de pausa o seguir detectada para la nota:", note);
+    }
+
     if (!normalized) return res.sendStatus(204);
 
     // Mapear IDs de Kommo → mantener el hilo en Laburen
@@ -38,36 +50,24 @@ export async function kommoWebhook(req, res) {
       normalized.contactId ?? normalized.leadId ?? ""
     );
 
-    if(note === "agente pausar"){
-      idsPausados.add(elementId);
-      log.info(`El elemento ${elementId} ha sido pausado.`);
-      return res.sendStatus(204);
-    }else if(note === "agente seguir"){
-      idsPausados.delete(elementId);
-      log.info(`El elemento ${elementId} ha sido reanudado.`);
-      return res.sendStatus(204);
-    }else{
-      log.info("Ninguna acccion de pausa o seguir detectada para la nota:", note);
-    }
+    // if (note === "" || note === "seguir") {
+    //   const data = await queryLaburen({
+    //     query: normalized.text,
+    //     conversationId,
+    //     visitorId,
+    //     metadata: {
+    //       kommo: {
+    //         contactId: normalized.contactId,
+    //         leadId: normalized.leadId,
+    //         chatId: normalized.chatId
+    //       },
+    //     },
+    //   });
 
-   // if (note === "" || note === "seguir") {
-   //   const data = await queryLaburen({
-   //     query: normalized.text,
-   //     conversationId,
-   //     visitorId,
-   //     metadata: {
-   //       kommo: {
-   //         contactId: normalized.contactId,
-   //         leadId: normalized.leadId,
-   //         chatId: normalized.chatId
-   //       },
-   //     },
-   //   });
+    //   const answer = (data?.answer || "").trim();
 
-   //   const answer = (data?.answer || "").trim();
-
-   //   log.info("LABUREN ANSWER →", answer);
-   // }
+    //   log.info("LABUREN ANSWER →", answer);
+    // }
 
     return res.sendStatus(204);
   } catch (err) {
