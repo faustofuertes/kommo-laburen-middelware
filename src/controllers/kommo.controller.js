@@ -21,7 +21,7 @@ export async function kommoWebhook(req, res) {
     const normalized = normalizeIncomingMessage(parsed);
 
     // intenta extraer nota
-    const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
+    const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
     const elementId = parsed?.leads?.note?.[0]?.note?.element_id || ""
 
     log.info("NOTA ->", note);
@@ -47,9 +47,9 @@ export async function kommoWebhook(req, res) {
       log.info(`El elemento ${elementId} ha sido reanudado.`);
       return res.sendStatus(204);
     }else{
-      log.info("Ninguna acccion de pausa o seguir detectada.");
+      log.info("Ninguna acccion de pausa o seguir detectada para la nota:", note);
     }
-    
+
    // if (note === "" || note === "seguir") {
    //   const data = await queryLaburen({
    //     query: normalized.text,
