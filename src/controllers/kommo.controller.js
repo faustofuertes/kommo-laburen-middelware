@@ -21,7 +21,7 @@ export async function kommoWebhook(req, res) {
     // intenta extraer nota
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
 
-    info.log("NOTA ->", note);
+    log.info("NOTA ->", note);
 
     if (!normalized) return res.sendStatus(204);
 
