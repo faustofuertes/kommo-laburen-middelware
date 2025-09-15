@@ -20,8 +20,10 @@ export async function kommoWebhook(req, res) {
 
     // intenta extraer nota
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
+    const contactId = parsed?.leads?.note?.[0]?.note?.account_id || ""
 
     log.info("NOTA ->", note);
+    log.info("Account id ->", contactId);
 
     if (!normalized) return res.sendStatus(204);
 
