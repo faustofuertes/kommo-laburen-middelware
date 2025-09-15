@@ -22,6 +22,7 @@ export async function kommoWebhook(req, res) {
 
     // --- CASO: llega un NOTE (pausa / seguir) ---
     if (parsed?.leads?.note) {
+      log.info('Llego note.');
       const noteContactId = parsed?.leads?.note?.contactId;
       const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
 
