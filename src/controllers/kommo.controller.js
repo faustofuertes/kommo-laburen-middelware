@@ -3,37 +3,58 @@ import { normalizeIncomingMessage } from "../utils/normalizer.js";
 import { queryLaburen } from "../services/laburen.service.js";
 import { log } from "../logger.js";
 
+const idsPausados = new Set();
+
 export async function kommoWebhook(req, res) {
   try {
-    // Cuerpo RAW → tu parser decide (JSON o x-www-form-urlencoded con corchetes)
     const contentType = req.headers["content-type"] || "";
     const raw =
       typeof req.body === "string"
         ? req.body
         : req.body
-          ? req.body.toString("utf8")
-          : "";
-
-
+        ? req.body.toString("utf8")
+        : "";
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    // 👇 agregado: imprime el body crudo en consola
-    const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
-    
-    // log para verificar
-    console.log("NOTE TEXT →", note);
-
     if (!normalized) return res.sendStatus(204);
 
-    // Mapear IDs de Kommo → mantener el hilo en Laburen
-    const conversationId = String(
-      normalized.chatId ?? normalized.leadId ?? normalized.contactId ?? ""
-    );
-    const visitorId = String(normalized.contactId ?? normalized.leadId ?? "");
+    const text = (normalized.text || "").toLowerCase();
 
-    if (!text || text === "seguir") {
+    // --- CASO: llega un NOTE (pausa / seguir) ---
+    if (parsed?.leads?.note) {
+      const noteContactId = String(normalized.contactId ?? "");
+      if (text === "agente parar") {
+        idsPausados.add(noteContactId);
+        log.info(`Contacto ${noteContactId} pausado.`);
+        return res.sendStatus(200);
+      }
+      if (text === "agente seguir") {
+        idsPausados.delete(noteContactId);
+        log.info(`Contacto ${noteContactId} reanudado.`);
+        return res.sendStatus(200);
+      }
+      // si es otra nota, la ignorás
+      return res.sendStatus(200);
+    }
+
+    // --- CASO: llega un MESSAGE ---
+    if (parsed?.message?.add) {
+      const msgContactId = String(normalized.contactId ?? "");
+
+      // Si está pausado → ignorar
+      if (idsPausados.has(msgContactId)) {
+        log.info(`Contacto ${msgContactId} está pausado → no se llama al agente`);
+        return res.sendStatus(200);
+      }
+
+      // Si NO está pausado → llamar al agente
+      const conversationId = String(
+        normalized.chatId ?? normalized.leadId ?? normalized.contactId ?? ""
+      );
+      const visitorId = String(normalized.contactId ?? normalized.leadId ?? "");
+
       const data = await queryLaburen({
         query: normalized.text,
         conversationId,
@@ -46,12 +67,15 @@ export async function kommoWebhook(req, res) {
           },
         },
       });
+
+      const answer = (data?.answer || "").trim();
+      log.info("INCOMING MESSAGE →", normalized);
+      log.info("LABUREN ANSWER →", answer);
+
+      return res.sendStatus(200);
     }
 
-    const answer = (data?.answer || "").trim();
-    log.info("INCOMING MESSAGE →", normalized);
-    log.info("LABUREN ANSWER →", answer);
-
+    // --- Si no es ni NOTE ni MESSAGE ---
     return res.sendStatus(204);
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
