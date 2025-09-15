@@ -20,7 +20,6 @@ export async function kommoWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    // intenta extraer nota
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
     const elementId = parsed?.leads?.note?.[0]?.note?.element_id || ""
 
@@ -33,7 +32,7 @@ export async function kommoWebhook(req, res) {
       log.info(`El elemento ${elementId} ha sido reanudado.`);
       return res.sendStatus(204);
     } else {
-      log.info("Ninguna acccion detectada para la nota:", note);
+      log.info(`El elemento ${elementId} no tiene acción de pausa/reanudación.`);
     }
 
     if (!normalized) return res.sendStatus(204);
@@ -46,30 +45,28 @@ export async function kommoWebhook(req, res) {
       normalized.contactId ?? normalized.leadId ?? ""
     );
 
-    if(idsPausados.has(normalized.element_id)){
+    if (idsPausados.has(normalized.element_id)) {
       log.info(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
       return res.sendStatus(204);
-    } else{
-      log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen si corresponde.`);
+    } else {
+      log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
+
+      const data = await queryLaburen({
+        query: normalized.text,
+        conversationId,
+        visitorId,
+        metadata: {
+          kommo: {
+            contactId: normalized.contactId,
+            leadId: normalized.leadId,
+            chatId: normalized.chatId
+          },
+        },
+      });
+
+      const answer = (data?.answer || "").trim();
+      log.info("LABUREN ANSWER →", answer);
     }
-    // if (note === "" || note === "seguir") {
-    //   const data = await queryLaburen({
-    //     query: normalized.text,
-    //     conversationId,
-    //     visitorId,
-    //     metadata: {
-    //       kommo: {
-    //         contactId: normalized.contactId,
-    //         leadId: normalized.leadId,
-    //         chatId: normalized.chatId
-    //       },
-    //     },
-    //   });
-
-    //   const answer = (data?.answer || "").trim();
-
-    //   log.info("LABUREN ANSWER →", answer);
-    // }
 
     return res.sendStatus(204);
   } catch (err) {
