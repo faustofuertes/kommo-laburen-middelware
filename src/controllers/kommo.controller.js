@@ -20,10 +20,10 @@ export async function kommoWebhook(req, res) {
 
     // intenta extraer nota
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
-    const contactId = parsed?.leads?.note?.[0]?.note?.account_id || ""
+    const elementId = parsed?.leads?.note?.[0]?.note?.element_id || ""
 
     log.info("NOTA ->", note);
-    log.info("Account id ->", contactId);
+    log.info("Element id ->", elementId);
 
     if (!normalized) return res.sendStatus(204);
 
@@ -45,6 +45,7 @@ export async function kommoWebhook(req, res) {
             contactId: normalized.contactId,
             leadId: normalized.leadId,
             chatId: normalized.chatId,
+            elementId: normalized.element_id
           },
         },
       });
