@@ -50,23 +50,26 @@ export async function kommoWebhook(req, res) {
       return res.sendStatus(204);
     } else {
       log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
+      log.info("TEXT->", normalized);
+      //  const data = await queryLaburen({
+      //    query: normalized.text,
+      //    conversationId,
+      //    visitorId,
+      //    metadata: {
+      //      kommo: {
+      //       contactId: normalized.contactId,
+      //       leadId: normalized.leadId,
+      //        chatId: normalized.chatId
+      //      },
+      //    },
+      //  });
 
-      const data = await queryLaburen({
-        query: normalized.text,
-        conversationId,
-        visitorId,
-        metadata: {
-          kommo: {
-            contactId: normalized.contactId,
-            leadId: normalized.leadId,
-            chatId: normalized.chatId
-          },
-        },
-      });
-
-      const answer = (data?.answer || "").trim();
-      log.info("LABUREN ANSWER →", answer);
+      //  const answer = (data?.answer || "").trim();
+      //  log.info("LABUREN ANSWER →", answer);
     }
+
+
+    // bloque de enviar respuesta a kommo a traves de API
 
     return res.sendStatus(204);
   } catch (err) {
