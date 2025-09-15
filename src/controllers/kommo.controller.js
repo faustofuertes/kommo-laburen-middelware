@@ -20,45 +20,38 @@ export async function kommoWebhook(req, res) {
 
     if (!normalized) return res.sendStatus(204);
 
-    // --- CASO: llega un NOTE (pausa / seguir) ---
-    if (parsed?.leads?.note) {
-      const noteObj = parsed?.leads?.note?.[0]?.note || {};
-      const noteText = (noteObj.text || "").toLowerCase();
+    // --- Extraer nota (si existe) ---
+    const noteObj = parsed?.leads?.note?.[0]?.note || null;
+    const noteText = (noteObj?.text || "").toLowerCase();
+    const elementId = noteObj?.element_id ? String(noteObj.element_id) : null;
+    const elementType = noteObj?.element_type || null;
 
-      // Solo si el note corresponde a un contacto (element_type = "1")
-      let noteContactId = null;
-      if (noteObj.element_type === "1") {
-        noteContactId = String(noteObj.element_id || "");
-      }
-
-      if (noteText === "agente parar" && noteContactId) {
-        idsPausados.add(noteContactId);
-        log.info(`Contacto ${noteContactId} pausado via NOTE`);
-        return res.sendStatus(200);
-      } else if (noteText === "agente seguir" && noteContactId) {
-        idsPausados.delete(noteContactId);
-        log.info(`Contacto ${noteContactId} reanudado via NOTE`);
-        return res.sendStatus(200);
-      } else {
-        log.info(`Nota recibida (sin acción): ${noteText}`);
-        return res.sendStatus(200);
-      }
+    if (noteText === "agente parar" && elementId) {
+      idsPausados.add(elementId);
+      log.info(`ID ${elementId} pausado via NOTE (element_type=${elementType})`);
+      return res.sendStatus(200);
+    } else if (noteText === "agente seguir" && elementId) {
+      idsPausados.delete(elementId);
+      log.info(
+        `ID ${elementId} reanudado via NOTE (element_type=${elementType})`
+      );
+      return res.sendStatus(200);
     }
 
     // --- CASO: llega un MESSAGE ---
     if (parsed?.message?.add) {
       const msgContactId = String(normalized.contactId ?? "");
-      const text = (normalized.text || "").toLowerCase();
+      const msgLeadId = String(normalized.leadId ?? "");
 
-      // Si el contacto está pausado → ignorar
-      if (idsPausados.has(msgContactId)) {
+      // Si está pausado → ignorar
+      if (idsPausados.has(msgContactId) || idsPausados.has(msgLeadId)) {
         log.info(
-          `Contacto ${msgContactId} está pausado → no se llama al agente`
+          `Ignorado: contacto=${msgContactId}, lead=${msgLeadId} está pausado`
         );
         return res.sendStatus(200);
       }
 
-      // Si NO está pausado → llamar al agente
+      // Si no está pausado → llamar al agente
       const conversationId = String(
         normalized.chatId ?? normalized.leadId ?? normalized.contactId ?? ""
       );
@@ -84,7 +77,6 @@ export async function kommoWebhook(req, res) {
       return res.sendStatus(200);
     }
 
-    // --- Si no es ni NOTE ni MESSAGE ---
     return res.sendStatus(204);
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
