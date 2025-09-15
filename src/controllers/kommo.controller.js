@@ -4,6 +4,8 @@ import { queryLaburen } from "../services/laburen.service.js";
 import { log } from "../logger.js";
 import { text } from "express";
 
+const idsPausados = new Set();
+
 export async function kommoWebhook(req, res) {
   try {
     // Cuerpo RAW → tu parser decide (JSON o x-www-form-urlencoded con corchetes)
@@ -36,6 +38,18 @@ export async function kommoWebhook(req, res) {
       normalized.contactId ?? normalized.leadId ?? ""
     );
 
+    if(note === "agente pausar"){
+      idsPausados.add(elementId);
+      log.info(`El elemento ${elementId} ha sido pausado.`);
+      return res.sendStatus(204);
+    }else if(note === "agente seguir"){
+      idsPausados.delete(elementId);
+      log.info(`El elemento ${elementId} ha sido reanudado.`);
+      return res.sendStatus(204);
+    }else{
+      log.info("Ninguna acccion de pausa o seguir detectada.");
+    }
+    
    // if (note === "" || note === "seguir") {
    //   const data = await queryLaburen({
    //     query: normalized.text,
