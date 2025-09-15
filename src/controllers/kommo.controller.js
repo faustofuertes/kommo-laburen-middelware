@@ -24,6 +24,7 @@ export async function kommoWebhook(req, res) {
 
     log.info("NOTA ->", note);
     log.info("Element id ->", elementId);
+    log.info("INCOMING MESSAGE →", normalized);
 
     if (!normalized) return res.sendStatus(204);
 
@@ -44,15 +45,13 @@ export async function kommoWebhook(req, res) {
           kommo: {
             contactId: normalized.contactId,
             leadId: normalized.leadId,
-            chatId: normalized.chatId,
-            elementId: normalized.element_id
+            chatId: normalized.chatId
           },
         },
       });
 
       const answer = (data?.answer || "").trim();
 
-      log.info("INCOMING MESSAGE →", normalized);
       log.info("LABUREN ANSWER →", answer);
     }
 
