@@ -12,31 +12,32 @@ export async function kommoWebhook(req, res) {
       typeof req.body === "string"
         ? req.body
         : req.body
-        ? req.body.toString("utf8")
-        : "";
+          ? req.body.toString("utf8")
+          : "";
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
     if (!normalized) return res.sendStatus(204);
 
-    const text = (normalized.text || "").toLowerCase();
-
     // --- CASO: llega un NOTE (pausa / seguir) ---
     if (parsed?.leads?.note) {
-      const noteContactId = String(normalized.contactId ?? "");
-      if (text === "agente parar") {
+      const noteContactId = parsed?.leads?.note?.contactId;
+      const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
+
+      if (note === "agente parar") {
         idsPausados.add(noteContactId);
         log.info(`Contacto ${noteContactId} pausado.`);
         return res.sendStatus(200);
       }
-      if (text === "agente seguir") {
+      else if (note === "agente seguir") {
         idsPausados.delete(noteContactId);
         log.info(`Contacto ${noteContactId} reanudado.`);
         return res.sendStatus(200);
       }
-      // si es otra nota, la ignorás
-      return res.sendStatus(200);
+      else {
+        return res.sendStatus(200);
+      }
     }
 
     // --- CASO: llega un MESSAGE ---
