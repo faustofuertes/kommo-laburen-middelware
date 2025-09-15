@@ -24,9 +24,6 @@ export async function kommoWebhook(req, res) {
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
     const elementId = parsed?.leads?.note?.[0]?.note?.element_id || ""
 
-    log.info("INCOMING MESSAGE →", normalized);
-    log.info(normalized.element_id);
-
     if (note === "agente pausar") {
       idsPausados.add(elementId);
       log.info(`El elemento ${elementId} ha sido pausado.`);
@@ -49,6 +46,12 @@ export async function kommoWebhook(req, res) {
       normalized.contactId ?? normalized.leadId ?? ""
     );
 
+    if(idsPausados.has(normalized.element_id)){
+      log.info(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
+      return res.sendStatus(204);
+    } else{
+      log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen si corresponde.`);
+    }
     // if (note === "" || note === "seguir") {
     //   const data = await queryLaburen({
     //     query: normalized.text,
