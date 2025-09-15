@@ -36,24 +36,24 @@ export async function kommoWebhook(req, res) {
       normalized.contactId ?? normalized.leadId ?? ""
     );
 
-    if (note === "" || note === "seguir") {
-      const data = await queryLaburen({
-        query: normalized.text,
-        conversationId,
-        visitorId,
-        metadata: {
-          kommo: {
-            contactId: normalized.contactId,
-            leadId: normalized.leadId,
-            chatId: normalized.chatId
-          },
-        },
-      });
+   // if (note === "" || note === "seguir") {
+   //   const data = await queryLaburen({
+   //     query: normalized.text,
+   //     conversationId,
+   //     visitorId,
+   //     metadata: {
+   //       kommo: {
+   //         contactId: normalized.contactId,
+   //         leadId: normalized.leadId,
+   //         chatId: normalized.chatId
+   //       },
+   //     },
+   //   });
 
-      const answer = (data?.answer || "").trim();
+   //   const answer = (data?.answer || "").trim();
 
-      log.info("LABUREN ANSWER →", answer);
-    }
+   //   log.info("LABUREN ANSWER →", answer);
+   // }
 
     return res.sendStatus(204);
   } catch (err) {
