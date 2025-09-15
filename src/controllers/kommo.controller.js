@@ -2,6 +2,7 @@ import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
 import { queryLaburen } from "../services/laburen.service.js";
 import { log } from "../logger.js";
+import { text } from "express";
 
 export async function kommoWebhook(req, res) {
   try {
@@ -11,14 +12,16 @@ export async function kommoWebhook(req, res) {
       typeof req.body === "string"
         ? req.body
         : req.body
-        ? req.body.toString("utf8")
-        : "";
+          ? req.body.toString("utf8")
+          : "";
 
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
     // intenta extraer nota
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase();
+
+    info.log("NOTA ->", note);
 
     if (!normalized) return res.sendStatus(204);
 
