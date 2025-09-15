@@ -24,6 +24,7 @@ export async function kommoWebhook(req, res) {
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
     const elementId = parsed?.leads?.note?.[0]?.note?.element_id || ""
 
+    log.info("INCOMING MESSAGE →", normalized);
     log.info(normalized.element_id);
 
     if (note === "agente pausar") {
