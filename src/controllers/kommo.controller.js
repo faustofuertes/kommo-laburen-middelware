@@ -2,14 +2,14 @@ import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
 import { startLaburenConversation, continueLaburenConversation } from "../services/laburen.service.js";
 import { log } from "../logger.js";
-import { getContact } from "../services/kommo.service.js";
+import { getContact, addNoteToLead } from "../services/kommo.service.js";
+import { sendWppMessage } from "../services/whatsapp.services.js";
 
 const idsPausados = new Set();
 const conversationMap = new Map();
 
 export async function kommoWebhook(req, res) {
   try {
-    // Cuerpo RAW → tu parser decide (JSON o x-www-form-urlencoded con corchetes)
     const contentType = req.headers["content-type"] || "";
     const raw =
       typeof req.body === "string"
@@ -22,8 +22,9 @@ export async function kommoWebhook(req, res) {
     const normalized = normalizeIncomingMessage(parsed);
 
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
-    const elementId = parsed?.leads?.note?.[0]?.note?.element_id || ""
+    const elementId = parsed?.leads?.note?.[0]?.note?.element_id || "";
 
+    // --- Pausa/Reanudación ---
     if (note === "agente pausar") {
       idsPausados.add(elementId);
       log.info(`El elemento ${elementId} ha sido pausado.`);
@@ -36,79 +37,74 @@ export async function kommoWebhook(req, res) {
       log.info(`El elemento ${elementId} no tiene acción de pausa/reanudación.`);
     }
 
-    if (!normalized) return res.sendStatus(204);
-
-    // Mapear IDs de Kommo → mantener el hilo en Laburen
-    const conversationId = String(
-      normalized.chatId ?? normalized.leadId ?? normalized.contactId ?? ""
-    );
-    const visitorId = String(
-      normalized.contactId ?? normalized.leadId ?? ""
-    );
-
+    // --- Ignorar si está pausado ---
     if (idsPausados.has(normalized.element_id)) {
       log.info(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
       return res.sendStatus(204);
-    } else {
-      log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
-      const contact = await getContact(normalized.contact_id);
-    
-      let conversationId;
-      let data;
-    
-      // 1. ¿Ya tengo un conversationId para este contact_id?
-      if (conversationMap.has(normalized.contact_id)) {
-        conversationId = conversationMap.get(normalized.contact_id);
-        log.info(`Reusando conversación existente para contact_id ${normalized.contact_id}: ${conversationId}`);
-    
-        // 👉 Continuar conversación existente
-      //  data = await continueLaburenConversation({
-      //    conversationId,
-      //    query: normalized.text,
-      //    visitorId: normalized.contact_id,
-      //    metadata: {
-      //      kommo: {
-      //        contactId: normalized.contact_id,
-       //       leadId: normalized.element_id,
-      //        chatId: normalized.chat_id
-      //      }
-      //    }
-      //  });
-    //  } else {
-        // 2. No existe → arranca nueva conversación
-     //   data = await startLaburenConversation({
-      //    query: normalized.text,
-      //    visitorId: normalized.contact_id,
-      //    metadata: {
-      //      kommo: {
-      //        contactId: normalized.contact_id,
-      //        leadId: normalized.element_id,
-      //        chatId: normalized.chat_id
-     //      }
-     //     }
-      //  });
-    
-        conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
-        conversationMap.set(normalized.contact_id, conversationId);
-    
-        log.info(`Nueva conversación asignada para contact_id ${normalized.contact_id}: ${conversationId}`);
-      }
-    
-      const answer = (data?.answer || "").trim();
-    
-      // 3. Payload final a enviar a WPP API
-      const payloadWpp = {
-        to: contact.phone,
-        message: answer,
-        contactName: contact.name,
-        leadId: normalized.element_id,
-        chatId: normalized.chat_id
-      };
-    
-      log.info("WPP PAYLOAD →", payloadWpp);
-    }    
+    }
 
-  //  return res.sendStatus(204);
+    log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
+    const contact = await getContact(normalized.contact_id);
+
+    let conversationId;
+    let data;
+
+    // --- Manejo de conversación en Laburen ---
+    if (conversationMap.has(normalized.contact_id)) {
+      conversationId = conversationMap.get(normalized.contact_id);
+      log.info(`Reusando conversación existente para contact_id ${normalized.contact_id}: ${conversationId}`);
+
+      data = await continueLaburenConversation({
+        conversationId,
+        query: normalized.text,
+        visitorId: normalized.contact_id,
+        metadata: {
+          kommo: {
+            contactId: normalized.contact_id,
+            leadId: normalized.element_id,
+            chatId: normalized.chat_id
+          }
+        }
+      });
+    } else {
+      data = await startLaburenConversation({
+        query: normalized.text,
+        visitorId: normalized.contact_id,
+        metadata: {
+          kommo: {
+            contactId: normalized.contact_id,
+            leadId: normalized.element_id,
+            chatId: normalized.chat_id
+          }
+        }
+      });
+
+      conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
+      conversationMap.set(normalized.contact_id, conversationId);
+
+      log.info(`Nueva conversación asignada para contact_id ${normalized.contact_id}: ${conversationId}`);
+    }
+
+    const answer = (data?.answer || "").trim();
+
+    // --- Payload a WhatsApp ---
+    const payloadWpp = {
+      to: contact.phone,
+      message: answer,
+      contactName: contact.name,
+      leadId: normalized.element_id,
+      chatId: normalized.chat_id
+    };
+
+    log.info("WPP PAYLOAD →", payloadWpp);
+
+    // 1. Enviar a WhatsApp
+    // await sendWppMessage(payloadWpp);
+
+    // 2. Postear nota en Kommo
+    await addNoteToLead(normalized.lead_id, `🤖 Agente Laburen: ${answer}`);
+
+    return res.sendStatus(204);
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
     return res.sendStatus(204);

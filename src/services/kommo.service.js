@@ -35,3 +35,30 @@ export async function getContact(contactId) {
     throw error;
   }
 }
+
+export async function addNoteToLead(leadId, noteText) {
+    try {
+      const response = await axios.post(
+        `${KOMMO_BASE_URL}/api/v4/leads/${leadId}/notes`,
+        [
+          {
+            note_type: "common",
+            params: {
+              text: noteText
+            }
+          }
+        ],
+        {
+          headers: {
+            Authorization: `Bearer ${KOMMO_ACCESS_TOKEN}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+  
+      return response.data;
+    } catch (error) {
+      console.error("Error al agregar nota al lead:", error.response?.data || error.message);
+      throw error;
+    }
+  }
