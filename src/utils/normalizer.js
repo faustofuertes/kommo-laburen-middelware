@@ -6,6 +6,7 @@ export function normalizeIncomingMessage(parsed) {
 
   return {
     text: ev.text ?? null,
-    contact_id: ev.contact_id ? String(ev.contact_id) : null
+    contact_id: ev.contact_id ? String(ev.contact_id) : null,
+    element_id: ev.element_id ? String(ev.element_id) : null
   };
 }

@@ -52,9 +52,7 @@ export async function kommoWebhook(req, res) {
     } else {
       log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
       const contact = await getContact(normalized.contact_id);
-      log.info("CONTACTO->", contact);
-      log.info("id contacto->", normalized.contact_id);
-      log.info("TEXT->", normalized);
+      log.info(`CONTACTO-> ${contact} TEXT-> ${normalized}`)
 
       //  const data = await queryLaburen({
       //    query: normalized.text,
