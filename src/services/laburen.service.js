@@ -26,19 +26,19 @@ export async function startLaburenConversation({ query, visitorId, metadata, tim
   }
 }
 
-// 👉 Continuar una conversación existente
+// 👉 Continuar conversación existente
 export async function continueLaburenConversation({ conversationId, query, visitorId, metadata, timeoutMs = 15000 }) {
   const controller = new AbortController();
   const t = setTimeout(() => controller.abort(), timeoutMs);
 
   try {
-    const res = await fetch(`${BASE}/conversations/${conversationId}/query`, {
+    const res = await fetch(`${BASE}/agents/${AGENT_ID}/query`, {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${AUTHORIZATION}`,
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ query, visitorId, metadata }),
+      body: JSON.stringify({ conversationId, query, visitorId, metadata }),
       signal: controller.signal,
     });
 
