@@ -1,5 +1,4 @@
 import axios from "axios";
-
 const KOMMO_BASE_URL = process.env.KOMMO_BASE_URL;
 const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
 

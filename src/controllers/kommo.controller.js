@@ -2,7 +2,6 @@ import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
 import { startLaburenConversation, continueLaburenConversation } from "../services/laburen.service.js";
 import { log } from "../logger.js";
-import { text } from "express";
 import { getContact } from "../services/kommo.service.js";
 
 const idsPausados = new Set();
@@ -63,31 +62,31 @@ export async function kommoWebhook(req, res) {
         log.info(`Reusando conversación existente para contact_id ${normalized.contact_id}: ${conversationId}`);
     
         // 👉 Continuar conversación existente
-        data = await continueLaburenConversation({
-          conversationId,
-          query: normalized.text,
-          visitorId: normalized.contact_id,
-          metadata: {
-            kommo: {
-              contactId: normalized.contact_id,
-              leadId: normalized.element_id,
-              chatId: normalized.chat_id
-            }
-          }
-        });
-      } else {
+      //  data = await continueLaburenConversation({
+      //    conversationId,
+      //    query: normalized.text,
+      //    visitorId: normalized.contact_id,
+      //    metadata: {
+      //      kommo: {
+      //        contactId: normalized.contact_id,
+       //       leadId: normalized.element_id,
+      //        chatId: normalized.chat_id
+      //      }
+      //    }
+      //  });
+    //  } else {
         // 2. No existe → arranca nueva conversación
-        data = await startLaburenConversation({
-          query: normalized.text,
-          visitorId: normalized.contact_id,
-          metadata: {
-            kommo: {
-              contactId: normalized.contact_id,
-              leadId: normalized.element_id,
-              chatId: normalized.chat_id
-            }
-          }
-        });
+     //   data = await startLaburenConversation({
+      //    query: normalized.text,
+      //    visitorId: normalized.contact_id,
+      //    metadata: {
+      //      kommo: {
+      //        contactId: normalized.contact_id,
+      //        leadId: normalized.element_id,
+      //        chatId: normalized.chat_id
+     //      }
+     //     }
+      //  });
     
         conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
         conversationMap.set(normalized.contact_id, conversationId);
@@ -109,7 +108,7 @@ export async function kommoWebhook(req, res) {
       log.info("WPP PAYLOAD →", payloadWpp);
     }    
 
-    return res.sendStatus(204);
+  //  return res.sendStatus(204);
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
     return res.sendStatus(204);
