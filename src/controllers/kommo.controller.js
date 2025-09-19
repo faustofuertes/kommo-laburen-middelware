@@ -3,6 +3,7 @@ import { normalizeIncomingMessage } from "../utils/normalizer.js";
 import { queryLaburen } from "../services/laburen.service.js";
 import { log } from "../logger.js";
 import { text } from "express";
+import { getContact } from "../services/kommo.service.js";
 
 const idsPausados = new Set();
 
@@ -49,8 +50,12 @@ export async function kommoWebhook(req, res) {
       log.info(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
       return res.sendStatus(204);
     } else {
+      const contact = await getContact(23871894);
       log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
       log.info("TEXT->", normalized);
+      log.info("CONTACTO->", contact);
+// 👉 { name: "Juan Pérez", phone: "+54 9 11 1234 5678" }
+
       //  const data = await queryLaburen({
       //    query: normalized.text,
       //    conversationId,
