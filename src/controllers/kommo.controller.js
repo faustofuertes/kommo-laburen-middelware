@@ -23,7 +23,7 @@ export async function kommoWebhook(req, res) {
     const normalized = normalizeIncomingMessage(parsed);
 
     const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
-    const elementId = parsed?.leads?.note?.[0]?.note?.element_id || "";
+    const elementId = parsed?.leads?.note?.[0]?.note?.element_id || null;
 
     // --- Pausa/Reanudación ---
     if (note === "agente pausar") {
@@ -53,32 +53,32 @@ export async function kommoWebhook(req, res) {
     // --- Manejo de conversación en Laburen ---
     if (conversationMap.has(normalized.contact_id)) {
       conversationId = conversationMap.get(normalized.contact_id);
-      log.info(`Reusando conversación existente para contact_id ${normalized.contact_id}: ${conversationId}`);
+      log.info(`Reusando conversación existente para contact_id ${normalized.contact_id} -> ${conversationId}`);
 
- //     data = await continueLaburenConversation({
- //       conversationId,
- //       query: normalized.text,
- //       visitorId: normalized.contact_id,
- //       metadata: {
-   //       kommo: {
-     //       contactId: normalized.contact_id,
- //           leadId: normalized.element_id,
- //           chatId: normalized.chat_id
- //         }
- //       }
- //     });
-//    } else {
- //     data = await startLaburenConversation({
- //       query: normalized.text,
- //       visitorId: normalized.contact_id,
- //       metadata: {
- //         kommo: {
- //           contactId: normalized.contact_id,
- //           leadId: normalized.element_id,
- //           chatId: normalized.chat_id
-  //        }
- //      }
-  //    });
+      data = await continueLaburenConversation({
+        conversationId,
+        query: normalized.text,
+        visitorId: normalized.contact_id,
+        metadata: {
+          kommo: {
+            contactId: normalized.contact_id,
+            leadId: normalized.element_id,
+            chatId: normalized.chat_id
+          }
+        }
+      });
+    } else {
+      data = await startLaburenConversation({
+        query: normalized.text,
+        visitorId: normalized.contact_id,
+        metadata: {
+          kommo: {
+            contactId: normalized.contact_id,
+            leadId: normalized.element_id,
+            chatId: normalized.chat_id
+          }
+        }
+      });
 
       conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
       conversationMap.set(normalized.contact_id, conversationId);
