@@ -50,11 +50,11 @@ export async function kommoWebhook(req, res) {
       log.info(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
       return res.sendStatus(204);
     } else {
-      const contact = await getContact(23871894);
       log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
-      log.info("TEXT->", normalized);
+      const contact = await getContact(normalized.contact_id);
       log.info("CONTACTO->", contact);
-// 👉 { name: "Juan Pérez", phone: "+54 9 11 1234 5678" }
+      log.info("id contacto->", normalized.contact_id);
+      log.info("TEXT->", normalized);
 
       //  const data = await queryLaburen({
       //    query: normalized.text,
