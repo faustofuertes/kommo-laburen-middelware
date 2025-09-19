@@ -6,6 +6,7 @@ import { text } from "express";
 import { getContact } from "../services/kommo.service.js";
 
 const idsPausados = new Set();
+const conversationMap = new Map();
 
 export async function kommoWebhook(req, res) {
   try {
@@ -52,28 +53,61 @@ export async function kommoWebhook(req, res) {
     } else {
       log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
       const contact = await getContact(normalized.contact_id);
-      log.info("CONTACTO->", contact);
-      log.info("TEXT->", normalized);
-
-      //  const data = await queryLaburen({
-      //    query: normalized.text,
-      //    conversationId,
-      //    visitorId,
-      //    metadata: {
-      //      kommo: {
-      //       contactId: normalized.contactId,
-      //       leadId: normalized.leadId,
-      //        chatId: normalized.chatId
-      //      },
-      //    },
-      //  });
-
-      //  const answer = (data?.answer || "").trim();
-      //  log.info("LABUREN ANSWER →", answer);
-    }
-
-
-    // bloque de enviar respuesta a kommo a traves de API
+    
+      let conversationId;
+      let data;
+    
+      // 1. ¿Ya tengo un conversationId para este contact_id?
+      if (conversationMap.has(normalized.contact_id)) {
+        conversationId = conversationMap.get(normalized.contact_id);
+        log.info(`Reusando conversación existente para contact_id ${normalized.contact_id}: ${conversationId}`);
+    
+        // 👉 Continuar conversación existente
+        data = await continueLaburenConversation({
+          conversationId,
+          query: normalized.text,
+          visitorId: normalized.contact_id,
+          metadata: {
+            kommo: {
+              contactId: normalized.contact_id,
+              leadId: normalized.element_id,
+              chatId: normalized.chat_id
+            }
+          }
+        });
+      } else {
+        // 2. No existe → arranca nueva conversación
+        data = await startLaburenConversation({
+          query: normalized.text,
+          visitorId: normalized.contact_id,
+          metadata: {
+            kommo: {
+              contactId: normalized.contact_id,
+              leadId: normalized.element_id,
+              chatId: normalized.chat_id
+            }
+          }
+        });
+    
+        conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
+        conversationMap.set(normalized.contact_id, conversationId);
+    
+        log.info(`Nueva conversación asignada para contact_id ${normalized.contact_id}: ${conversationId}`);
+      }
+    
+      const answer = (data?.answer || "").trim();
+    
+      // 3. Payload final a enviar a WPP API
+      const payloadWpp = {
+        to: contact.phone,
+        message: answer,
+        contactName: contact.name,
+        leadId: normalized.element_id,
+        chatId: normalized.chat_id
+      };
+    
+      log.info("WPP PAYLOAD →", payloadWpp);
+    }    
 
     return res.sendStatus(204);
   } catch (err) {
