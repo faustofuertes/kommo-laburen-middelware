@@ -1,6 +1,6 @@
 import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
-import { queryLaburen } from "../services/laburen.service.js";
+import { startLaburenConversation, continueLaburenConversation } from "../services/laburen.service.js";
 import { log } from "../logger.js";
 import { text } from "express";
 import { getContact } from "../services/kommo.service.js";
