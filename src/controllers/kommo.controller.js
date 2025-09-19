@@ -29,11 +29,11 @@ export async function kommoWebhook(req, res) {
     if (note === "agente pausar") {
       idsPausados.add(elementId);
       log.info(`El elemento ${elementId} ha sido pausado.`);
-      return res.sendStatus(204);
+      return
     } else if (note === "agente seguir") {
       idsPausados.delete(elementId);
       log.info(`El elemento ${elementId} ha sido reanudado.`);
-      return res.sendStatus(204);
+      return
     } else {
       log.info(`El elemento ${elementId} no tiene acción de pausa/reanudación.`);
     }
@@ -41,7 +41,7 @@ export async function kommoWebhook(req, res) {
     // --- Ignorar si está pausado ---
     if (idsPausados.has(normalized.element_id)) {
       log.info(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
-      return res.sendStatus(204);
+      return
     }
 
     log.info(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
@@ -105,9 +105,9 @@ export async function kommoWebhook(req, res) {
     // 2. Postear nota en Kommo
     await addNoteToLead(normalized.lead_id, `🤖 Agente Laburen: ${answer}`);
 
-    return res.sendStatus(204);
+    return
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
-    return res.sendStatus(204);
+    return
   }
 }
