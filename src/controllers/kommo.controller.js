@@ -99,15 +99,40 @@ export async function kommoWebhook(req, res) {
 
     log.info("WPP PAYLOAD →", payloadWpp);
 
-    // 1. Enviar a WhatsApp
+    // Mandar a WPP
     // await sendWppMessage(payloadWpp);
 
-    // 2. Postear nota en Kommo
+    // Mandar nota a Kommo
     await addNoteToLead(normalized.lead_id, `🤖 Agente Laburen: ${answer}`);
 
     return
   } catch (err) {
     log.error("Error en kommoWebhook:", err);
     return
+  }
+}
+
+export async function handleAuthorizationCode(req, res) {
+  const code = req.query.code;
+  if (!code) return res.status(400).send("No authorization code received");
+
+  try {
+    const response = await fetch("https://nhautopiezas.kommo.com/oauth2/access_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        client_id: process.env.KOMMO_CLIENT_ID,
+        client_secret: process.env.KOMMO_CLIENT_SECRET,
+        grant_type: "authorization_code",
+        code,
+        redirect_uri: process.env.KOMMO_REDIRECT_URI,
+      }),
+    });
+
+    const data = await response.json();
+    res.send(data); // devuelve access_token y refresh_token
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error al obtener token");
   }
 }
