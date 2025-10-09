@@ -4,7 +4,7 @@ const KOMMO_LONG_DURATION_TOKEN = process.env.KOMMO_LONG_DURATION_TOKEN;
 
 export async function getContact(contactId) {
   try {
-    const response = await axios.get(`${KOMMO_L}/api/v4/contacts/${contactId}`, {
+    const response = await axios.get(`${KOMMO_BASE_URL}/api/v4/contacts/${contactId}`, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
