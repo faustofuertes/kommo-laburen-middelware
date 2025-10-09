@@ -7,7 +7,6 @@ const PORT = process.env.PORT || 3000;
 const app = express();
 
 app.use("/kommo", kommoRouter);
-app.use("/kommo/auth", kommoRouter);
 
 app.listen(PORT, () => {
   log.info(`Server running 🏃`);

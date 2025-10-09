@@ -1,14 +1,14 @@
 import axios from "axios";
 const KOMMO_BASE_URL = process.env.KOMMO_BASE_URL;
-const KOMMO_ACCESS_TOKEN = process.env.KOMMO_ACCESS_TOKEN;
+const KOMMO_LONG_DURATION_TOKEN = process.env.KOMMO_LONG_DURATION_TOKEN;
 
 export async function getContact(contactId) {
   try {
-    const response = await axios.get(`${KOMMO_BASE_URL}/api/v4/contacts/${contactId}`, {
+    const response = await axios.get(`${KOMMO_L}/api/v4/contacts/${contactId}`, {
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        Authorization: `Bearer ${KOMMO_ACCESS_TOKEN}`
+        Authorization: `Bearer ${KOMMO_LONG_DURATION_TOKEN}`
       }
     });
 
@@ -50,7 +50,7 @@ export async function addNoteToLead(leadId, noteText) {
         ],
         {
           headers: {
-            Authorization: `Bearer ${KOMMO_ACCESS_TOKEN}`,
+            Authorization: `Bearer ${KOMMO_LONG_DURATION_TOKEN}`,
             "Content-Type": "application/json"
           }
         }
