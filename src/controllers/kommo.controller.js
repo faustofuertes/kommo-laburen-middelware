@@ -23,8 +23,7 @@ export async function kommoWebhook(req, res) {
     const normalized = normalizeIncomingMessage(parsed);
 
     if (normalized.origin === 'waba' && normalized.element_id === '18712314') {
-      console.log('Soy el faustito paaaa')
-      //await processKommoMessage(normalized);
+      await processKommoMessage(normalized);
       console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
     }
 
@@ -103,10 +102,10 @@ export async function processKommoMessage(normalized) {
 
   // Mandar a WPP
   // await sendWppMessage(payloadWpp);
-  // await sendWppMessage(contacct.phone, answer);
-  console.log('Enviando mensaje a wpp');
+  await sendWppMessage(contacct.phone, answer);
+  //console.log('Enviando mensaje a wpp');
 
   // Mandar nota a Kommo
-  // await addNoteToLead(normalized.lead_id, `🤖 Agente Laburen: ${answer}`);
-  console.log('Enviando mensaje a Kommo');
+  await addNoteToLead(normalized.lead_id, `🤖 Agente Laburen: ${answer}`);
+  //console.log('Enviando mensaje a Kommo');
 }
