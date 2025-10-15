@@ -9,6 +9,7 @@ const conversationMap = new Map();
 
 export async function kommoWebhook(req, res) {
   res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
+
   try {
     const contentType = req.headers["content-type"] || "";
     const raw =
@@ -19,22 +20,21 @@ export async function kommoWebhook(req, res) {
           : "";
 
     const parsed = parseIncoming(raw, contentType);
+    const normalized = normalizeIncomingMessage(parsed);
 
+
+    console.log(normalized.origin);
+    await processKommoMessage(normalized);
     
-
-      // Llamamos a la función que hace toda la lógica
-    console.log(parsed);
-    await processKommoMessage(parsed);
     console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
   }
 }
 
-export async function processKommoMessage(parsed) {
-  const normalized = normalizeIncomingMessage(parsed);
+export async function processKommoMessage(normalized) {
 
-  const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
+  const note = (normalized?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
 
   // --- Pausa/Reanudación ---
   if (note === "agente pausar") {

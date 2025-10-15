@@ -7,7 +7,8 @@ export function normalizeIncomingMessage(parsed) {
   return {
     text: ev.text ?? null,
     contact_id: ev.contact_id ? String(ev.contact_id) : null,
-    element_id: ev.element_id ? String(ev.element_id) : null,   // id del mensaje/elemento
-    lead_id: ev.entity_type === "lead" && ev.entity_id ? String(ev.entity_id) : null
+    element_id: ev.element_id ? String(ev.element_id) : null,
+    lead_id: ev.entity_type === "lead" && ev.entity_id ? String(ev.entity_id) : null,
+    origin: ev.origin ? String(ev.contact_id) : null,
   };
 }
