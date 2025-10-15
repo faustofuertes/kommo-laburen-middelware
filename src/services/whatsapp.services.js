@@ -17,7 +17,9 @@ export async function sendWppMessage(to, message) {
       messaging_product: "whatsapp",
       to: to,
       type: "text",
-      text: message
+      text: {
+        body: message
+      }
     }),
   });
 
