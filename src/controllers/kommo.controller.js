@@ -1,7 +1,6 @@
 import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
 import { startLaburenConversation, continueLaburenConversation } from "../services/laburen.service.js";
-import { log } from "../logger.js";
 import { getContact, addNoteToLead } from "../services/kommo.service.js";
 import { sendWppMessage } from "../services/whatsapp.services.js";
 
@@ -23,6 +22,7 @@ export async function kommoWebhook(req, res) {
 
     // Llamamos a la función que hace toda la lógica
     await processKommoMessage(parsed);
+    console.log('-----------------------------------------------------------------')
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
   }
