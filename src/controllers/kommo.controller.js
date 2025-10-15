@@ -20,9 +20,12 @@ export async function kommoWebhook(req, res) {
 
     const parsed = parseIncoming(raw, contentType);
 
-    // Llamamos a la función que hace toda la lógica
+    
+
+      // Llamamos a la función que hace toda la lógica
+    console.log(parsed);
     await processKommoMessage(parsed);
-    console.log('------------------------------------------------------------------------------------------------------------------------------------------------------------');
+    console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
   }
@@ -32,7 +35,6 @@ export async function processKommoMessage(parsed) {
   const normalized = normalizeIncomingMessage(parsed);
 
   const note = (parsed?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
-  const elementId = parsed?.leads?.note?.[0]?.note?.element_id || null;
 
   // --- Pausa/Reanudación ---
   if (note === "agente pausar") {
