@@ -124,8 +124,6 @@ A continuación se explica el uso y propósito de cada uno.
 
 ## 🧩 Estructura del proyecto
 
-## 🧩 Estructura del proyecto
-
 - **src/**
   - `index.js` — Punto de entrada
   - **controllers/**
