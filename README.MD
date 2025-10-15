@@ -39,9 +39,55 @@ Kommo → [Webhook Receiver] → [Agente de Laburen.com] → [Kommo (nota) / Wha
 
 ---
 
+## 🧾 Identificadores y Campos Internos
+
+El middleware utiliza distintos **identificadores (IDs)** provenientes de **Kommo** y **Laburen**, que son esenciales para mantener la trazabilidad de los mensajes, las conversaciones y los contactos.  
+A continuación se explica el uso y propósito de cada uno.
+
+### 🔹 `contact_id`
+- **Origen:** Kommo  
+- **Descripción:** ID único del **contacto** en el CRM Kommo.  
+- **Uso:**  
+  - Identifica al usuario dentro de Kommo.  
+  - Se usa como `visitorId` en Laburen para mantener coherencia entre ambas plataformas.  
+  - Es la clave primaria en el `conversationMap` para reusar conversaciones activas.
+
+### 🔹 `element_id`
+- **Origen:** Kommo  
+- **Descripción:** ID del **lead** (negocio) o elemento principal asociado al contacto.  
+- **Uso:**  
+  - Permite asociar notas y respuestas dentro del lead correspondiente.  
+  - Se utiliza para pausar o reanudar interacciones (`agente pausar` / `agente seguir`).  
+  - Sirve como referencia en logs y payloads.
+
+### 🔹 `chat_id`
+- **Origen:** Kommo  
+- **Descripción:** ID del chat o canal dentro de Kommo (por ejemplo, el hilo de WhatsApp).  
+- **Uso:**  
+  - Permite mantener la relación con la conversación exacta en Kommo.  
+  - Se incluye como metadata al enviar datos al Agente de Laburen.
+
+### 🔹 `conversationMap`
+- **Origen:** Middleware (local)  
+- **Descripción:** Mapa en memoria que asocia `contact_id` → `conversationId` de Laburen.  
+- **Uso:**  
+  - Evita crear múltiples conversaciones en Laburen para el mismo contacto.  
+  - Permite continuar el contexto conversacional.
+
+### 🔹 `idsPausados`
+- **Origen:** Middleware (local)  
+- **Descripción:** Set en memoria que mantiene los `element_id` (leads) pausados.  
+- **Uso:**  
+  - Si un lead está en este set, los mensajes **no se envían a Laburen**.  
+  - Controlado por los comandos:  
+    - `"agente pausar"` → agrega el `element_id` al set.  
+    - `"agente seguir"` → lo elimina.
+
+---
+
 ## 🔐 Variables de entorno
 
-### Laburen
+### Laburen.com
 | Variable                | Descripción                            |
 | ----------------------- | -------------------------------------- |
 | `LABUREN_BASE_URL`      | URL base de la API de Laburen.com      |
@@ -78,19 +124,19 @@ Kommo → [Webhook Receiver] → [Agente de Laburen.com] → [Kommo (nota) / Wha
 
 ## 🧩 Estructura del proyecto
 
-src/
-├── index.js # Punto de entrada
-├── controllers/
-│ └── kommoController.js # Lógica de endpoints de Kommo
-├── routes/
-│ └── kommoRoutes.js # Rutas relacionadas con Kommo
-├── services/
-│ ├── kommoService.js # Cliente y lógica Kommo API
-│ ├── laburenService.js # Lógica específica para Laburen.com
-│ └── wppService.js # Cliente WhatsApp API
-└── utils/
-├── normalizer.js # Funciones de normalización de datos
-├── parser.js # Funciones de parsing
-└── rawBody.js # Middleware raw body
+## 🧩 Estructura del proyecto
 
----
+- **src/**
+  - `index.js` — Punto de entrada
+  - **controllers/**
+    - `kommoController.js` — Lógica de endpoints de Kommo
+  - **routes/**
+    - `kommoRoutes.js` — Rutas relacionadas con Kommo
+  - **services/**
+    - `kommoService.js` — Cliente y lógica Kommo API
+    - `laburenService.js` — Lógica específica para Laburen.com
+    - `wppService.js` — Cliente WhatsApp API
+  - **utils/**
+    - `normalizer.js` — Funciones de normalización de datos
+    - `parser.js` — Funciones de parsing
+    - `rawBody.js` — Middleware raw body

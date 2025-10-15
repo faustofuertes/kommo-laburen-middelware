@@ -22,8 +22,9 @@ export async function kommoWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    if (normalized.origin === 'waba') {
-      await processKommoMessage(normalized);
+    if (normalized.origin === 'waba' && normalized.element_id === '18694802') {
+      console.log('Soy el faustito paaaa')
+      //await processKommoMessage(normalized);
       console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
     }
 
