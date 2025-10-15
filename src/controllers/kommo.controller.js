@@ -99,7 +99,9 @@ export async function processKommoMessage(parsed) {
 
   // Mandar a WPP
   // await sendWppMessage(payloadWpp);
+  console.log('Enviando mensaje a wpp');
 
   // Mandar nota a Kommo
-  await addNoteToLead(normalized.lead_id, `🤖 Agente Laburen: ${answer}`);
+  // await addNoteToLead(normalized.lead_id, `🤖 Agente Laburen: ${answer}`);
+  console.log('Enviando mensaje a Kommo');
 }
