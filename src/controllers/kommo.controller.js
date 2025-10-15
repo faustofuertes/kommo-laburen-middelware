@@ -22,10 +22,15 @@ export async function kommoWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    if (normalized.origin === 'waba') {
-      await processKommoMessage(normalized);
-      console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
-    }
+
+    console.log(normalized.origin);
+    await processKommoMessage(normalized);
+    console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+
+    //if (normalized.origin === 'waba') {
+    //  await processKommoMessage(normalized);
+    //  console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+    // }
 
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
