@@ -36,16 +36,15 @@ export async function processKommoMessage(parsed) {
 
   // --- Pausa/Reanudación ---
   if (note === "agente pausar") {
-    idsPausados.add(elementId);
-    console.log(`El elemento ${elementId} ha sido pausado.`);
+    idsPausados.add(normalized.element_id);
+    console.log(`El elemento ${normalized.element_id} ha sido pausado.`);
     return;
   } else if (note === "agente seguir") {
-    idsPausados.delete(elementId);
-    console.log(`El elemento ${elementId} ha sido reanudado.`);
+    idsPausados.delete(normalized.element_id);
+    console.log(`El elemento ${normalized.element_id} ha sido reanudado.`);
     return;
   } else {
-    console.log(`El elemento ${elementId} no tiene acción de pausa/reanudación.`);
-    console.log(`El elemento ${normalized.elementId} no tiene acción de pausa/reanudación.`);
+    console.log(`El elemento ${normalized.element_id} no tiene acción de pausa/reanudación.`);
   }
 
   // --- Ignorar si está pausado ---
