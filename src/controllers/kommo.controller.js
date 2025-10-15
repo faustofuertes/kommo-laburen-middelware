@@ -22,7 +22,7 @@ export async function kommoWebhook(req, res) {
 
     // Llamamos a la función que hace toda la lógica
     await processKommoMessage(parsed);
-    console.log('-----------------------------------------------------------------')
+    console.log('------------------------------------------------------------------------------------------------------------------------------------------------------------');
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
   }
@@ -45,6 +45,7 @@ export async function processKommoMessage(parsed) {
     return;
   } else {
     console.log(`El elemento ${elementId} no tiene acción de pausa/reanudación.`);
+    console.log(`El elemento ${normalized.elementId} no tiene acción de pausa/reanudación.`);
   }
 
   // --- Ignorar si está pausado ---
