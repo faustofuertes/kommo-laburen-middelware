@@ -1,39 +1,28 @@
 import fetch from "node-fetch";
 
-const WPP_API_URL = process.env.WPP_API_URL;
-const WPP_API_TOKEN = process.env.WPP_API_TOKEN;
+const URL = process.env.WPP_API_URL
+const PHONE_NUMBER_ID = process.env.WPP_PHONE_NUMBER_ID;
+const TOKEN = process.env.WPP_ACCESS_TOKEN;
 
-export async function sendWppMessage({ to, message, contactName, leadId, chatId }) {
-  try {
-    const res = await fetch(WPP_API_URL, {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${WPP_API_TOKEN}`,
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp", // si usás WhatsApp Cloud API
-        to,
-        type: "text",
-        text: {
-          body: message
-        },
-        context: {
-          contactName,
-          leadId,
-          chatId
-        }
-      })
-    });
+export async function sendWppMessage(to, message) {
+  const url = `${URL}/${PHONE_NUMBER_ID}/messages`;
 
-    const data = await res.json();
-    if (!res.ok) {
-      throw new Error(`WPP API error ${res.status}: ${JSON.stringify(data)}`);
-    }
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${TOKEN}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      messaging_product: "whatsapp",
+      to: to,
+      type: "text",
+      text: { message }
+    }),
+  });
 
-    return data;
-  } catch (err) {
-    console.error("Error enviando mensaje a WPP:", err);
-    throw err;
+  if (!res.ok) {
+    const error = await res.text();
+    console.error("Error sending message.", error);
   }
 }

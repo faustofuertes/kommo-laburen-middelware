@@ -29,6 +29,7 @@ export async function kommoWebhook(req, res) {
 
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
+    console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
   }
 }
 
@@ -101,6 +102,7 @@ export async function processKommoMessage(normalized) {
 
   // Mandar a WPP
   // await sendWppMessage(payloadWpp);
+  // await sendWppMessage(contacct.phone, answer);
   console.log('Enviando mensaje a wpp');
 
   // Mandar nota a Kommo
