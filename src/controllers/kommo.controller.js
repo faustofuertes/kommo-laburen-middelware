@@ -9,18 +9,10 @@ const conversationMap = new Map();
 const whiteList = [];
 
 export async function kommoNoteWebhook(req, res) {
+  res.sendStatus(204); // respondemos rápido
+
   try {
-    const contentType = req.headers["content-type"] || "";
-    const raw =
-      typeof req.body === "string"
-        ? req.body
-        : req.body
-          ? req.body.toString("utf8")
-          : "";
-
-
-    const parsed = parseIncoming(raw, req.headers["content-type"] || "");
-
+    const parsed = req.body; // ya es objeto
     const noteText = parsed?.note?.add?.[0]?.params?.text?.toLowerCase()?.trim() || "";
     const elementId = parsed?.note?.add?.[0]?.element_id;
 
@@ -31,6 +23,7 @@ export async function kommoNoteWebhook(req, res) {
     console.error('Error kommoNoteWebhook', error);
   }
 }
+
 
 export async function kommoMessageWebhook(req, res) {
 
@@ -48,7 +41,7 @@ export async function kommoMessageWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    if (normalized.origin === 'waba' && normalized.element_id === '18712314') {
+    if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
       await processKommoMessage(normalized);
       console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
     }

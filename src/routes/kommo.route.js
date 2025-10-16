@@ -4,6 +4,6 @@ import { kommoMessageWebhook, kommoNoteWebhook } from "../controllers/kommo.cont
 const router = Router();
 
 router.post("/webhook/message", rawBody, kommoMessageWebhook);
-router.post("/webhook/note", rawBody, kommoNoteWebhook);
+router.post("/kommo/webhook/note", express.json(), kommoNoteWebhook);
 
 export default router;
