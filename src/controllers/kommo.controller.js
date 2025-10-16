@@ -44,7 +44,7 @@ export async function kommoWebhook(req, res) {
 
 }
 
-export async function processKommoMessage(normalized) {
+async function processKommoMessage(normalized) {
 
   const contact = await getContact(normalized.contact_id);
 
@@ -85,6 +85,8 @@ export async function processKommoMessage(normalized) {
 
   await sendWppMessage(contact.phone, answer);
   await addNoteToLead(normalized.element_id, answer, contact.name);
+
+  return;
 }
 
 function processKommoNote(note, element_id) {
@@ -97,7 +99,6 @@ function processKommoNote(note, element_id) {
       idsPausados.add(element_id);
       console.log(`⏸️ El elemento ${element_id} ha sido pausado.`);
     }
-    return;
   } else if (note === "agente seguir") {
     if (idsPausados.has(element_id)) {
       idsPausados.delete(element_id);
@@ -105,7 +106,6 @@ function processKommoNote(note, element_id) {
     } else {
       console.log(`⚠️ Este elemento ${element_id} no esta pausado.`);
     }
-    return;
   }
-
+  return;
 }
