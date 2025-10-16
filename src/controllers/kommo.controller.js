@@ -6,7 +6,7 @@ import { sendWppMessage } from "../services/whatsapp.services.js";
 
 const idsPausados = new Set();
 const conversationMap = new Map();
-const whiteList = [];
+const whiteList = ['+5492233454259'];
 
 export async function kommoWebhook(req, res) {
   res.sendStatus(204); // responder rápido
@@ -24,8 +24,7 @@ export async function kommoWebhook(req, res) {
 
       const normalized = normalizeIncomingMessage(parsed);
       const contact = await getContact(normalized.contact_id);
-      if (normalized.origin === 'waba' && normalized.element_id === '18639150') {
-        console.log(contact.phone);
+      if (normalized.origin === 'waba' && whiteList.has(contact.phone)) {
         await processKommoMessage(normalized);
       }
 
