@@ -44,7 +44,6 @@ export async function kommoWebhook(req, res) {
 
     const parsed = parseIncoming(raw, contentType);
 
-    // Detectar tipo primero
     if (parsed?.message?.add) {
       const normalized = normalizeIncomingMessage(parsed);
       if (!normalized) return;
@@ -52,13 +51,11 @@ export async function kommoWebhook(req, res) {
       console.log("📩 Es un mensaje:", normalized.text, "de:", normalized.contact_id);
       await processKommoMessage(normalized);
 
-    } else if (parsed?.note?.add) {
-      const normalized = normalizeIncomingNote(parsed);
-      if (!normalized) return;
-
-      console.log("📝 Es una nota:", normalized.text, "de:", normalized.element_id);
-      await processKommoNote(normalized.text.toLowerCase().trim(), normalized.element_id);
-
+    } else if (parsed?.leads?.note) {
+      const noteObj = parsed.leads.note[0]?.note;
+      if (!noteObj || !noteObj.text) return;
+      console.log("📝 Nota de lead:", noteObj.text, "de:", noteObj.element_id);
+      // await processKommoNote(noteObj.text.toLowerCase().trim(), noteObj.element_id);
     } else {
       console.log("⚠️ Payload recibido pero no es mensaje ni nota:", parsed);
     }
