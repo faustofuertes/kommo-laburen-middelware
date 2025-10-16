@@ -49,7 +49,7 @@ export async function kommoWebhook(req, res) {
       if (!normalized) return;
 
       console.log("📩 Es un mensaje:", normalized.text, "de:", normalized.contact_id);
-      await processKommoMessage(normalized);
+      // await processKommoMessage(normalized);
 
     } else if (parsed?.leads?.note) {
       const noteObj = parsed.leads.note[0]?.note;
