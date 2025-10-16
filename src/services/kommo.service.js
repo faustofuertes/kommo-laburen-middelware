@@ -42,10 +42,10 @@ export async function addNoteToLead(leadId, noteText) {
       `${KOMMO_BASE_URL}/api/v4/leads/${leadId}/notes`,
       [
         {
-          note_type: "sms_out",
+          note_type: "service_message",
           "params": {
-            "text": "SMS",
-            "phone": "+14155551234"
+            "service": "Example service",
+            "text": "Note text"
           }
         }
       ],
