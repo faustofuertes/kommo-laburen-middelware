@@ -9,18 +9,28 @@ const conversationMap = new Map();
 const whiteList = [];
 
 export async function kommoNoteWebhook(req, res) {
-  res.sendStatus(204); // respondemos rápido
+  res.sendStatus(204);
 
   try {
-    const parsed = req.body; // ya es objeto
-    const noteText = parsed?.note?.add?.[0]?.params?.text?.toLowerCase()?.trim() || "";
-    const elementId = parsed?.note?.add?.[0]?.element_id;
+    const contentType = req.headers["content-type"] || "";
+    const raw =
+      typeof req.body === "string"
+        ? req.body
+        : req.body
+          ? req.body.toString("utf8")
+          : "";
 
-    console.log("🟣 Llegó la nota:", noteText, "de:", elementId);
-    processKommoNote(noteText, elementId);
+    const parsed = parseIncoming(raw, contentType);
+    const normalized = normalizeIncomingNote(parsed);
+
+    if (!normalized) return;
+
+    console.log("🟣 Llegó la nota:", normalized.text, "de:", normalized.element_id);
+
+    await processKommoNote(normalized.text.toLowerCase().trim(), normalized.element_id);
 
   } catch (error) {
-    console.error('Error kommoNoteWebhook', error);
+    console.error("Error kommoNoteWebhook:", error);
   }
 }
 

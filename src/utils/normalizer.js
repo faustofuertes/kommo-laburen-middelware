@@ -12,3 +12,15 @@ export function normalizeIncomingMessage(parsed) {
     origin: ev.origin ? String(ev.origin) : null,
   };
 }
+
+export function normalizeIncomingNote(parsed) {
+  const add = parsed?.note?.add;
+  const ev = Array.isArray(add) ? add[0] : null;
+
+  if (!ev || !ev.params?.text) return null;
+
+  return {
+    text: ev.params.text ?? null,
+    element_id: ev.element_id ? String(ev.element_id) : null,
+  };
+}
