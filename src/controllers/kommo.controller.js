@@ -23,8 +23,6 @@ export async function kommoNoteWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingNote(parsed);
 
-    if (!normalized) return;
-
     console.log("🟣 Llegó la nota:", normalized.text, "de:", normalized.element_id);
 
     await processKommoNote(normalized.text.toLowerCase().trim(), normalized.element_id);
@@ -34,9 +32,7 @@ export async function kommoNoteWebhook(req, res) {
   }
 }
 
-
 export async function kommoMessageWebhook(req, res) {
-
   res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
 
   try {
@@ -51,13 +47,16 @@ export async function kommoMessageWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
-      await processKommoMessage(normalized);
+    
+    // if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
+    if (normalized.element_id === '18766174') {
+      console.log(normalized);
+      //await processKommoMessage(normalized);
       console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
     }
 
   } catch (err) {
-    console.error("Error en kommoWebhook:", err);
+    console.error("Error en kommoMessageWebhook:", err);
     console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
   }
 }
