@@ -18,12 +18,14 @@ export async function kommoNoteWebhook(req, res) {
           ? req.body.toString("utf8")
           : "";
 
-    const parsed = parseIncoming(raw, contentType);
-    const normalized = normalizeIncomingMessage(parsed);
-    const note = (normalized?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
 
-    console.log('Llego la nota: ', note);
-    processKommoNote(note);
+    const parsed = parseIncoming(raw, req.headers["content-type"] || "");
+
+    const noteText = parsed?.note?.add?.[0]?.params?.text?.toLowerCase()?.trim() || "";
+    const elementId = parsed?.note?.add?.[0]?.element_id;
+
+    console.log("🟣 Llegó la nota:", noteText, "de:", elementId);
+    processKommoNote(noteText, elementId);
 
   } catch (error) {
     console.error('Error kommoNoteWebhook', error);
@@ -31,7 +33,6 @@ export async function kommoNoteWebhook(req, res) {
 }
 
 export async function kommoMessageWebhook(req, res) {
-  console.log("🚀 Kommo hizo POST a /kommo/webhook/message");
 
   res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
 
@@ -47,7 +48,6 @@ export async function kommoMessageWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    console.log('Llego el mensaje: ', normalized.text);
     if (normalized.origin === 'waba' && normalized.element_id === '18712314') {
       await processKommoMessage(normalized);
       console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
@@ -102,15 +102,15 @@ export async function processKommoMessage(normalized) {
   await addNoteToLead(normalized.element_id, answer, contact.name);
 }
 
-export async function processKommoNote(note) {
+export async function processKommoNote(note, element_id) {
 
   if (note === "agente pausar") {
-    idsPausados.add(normalized.element_id);
-    console.log(`El elemento ${normalized.element_id} ha sido pausado.`);
+    idsPausados.add(element_id);
+    console.log(`El elemento ${element_id} ha sido pausado.`);
     return;
   } else if (note === "agente seguir") {
-    idsPausados.delete(normalized.element_id);
-    console.log(`El elemento ${normalized.element_id} ha sido reanudado.`);
+    idsPausados.delete(element_id);
+    console.log(`El elemento ${element_id} ha sido reanudado.`);
     return;
   }
 
