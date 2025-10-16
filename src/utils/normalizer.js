@@ -15,7 +15,7 @@ export function normalizeIncomingMessage(parsed) {
 
 export function normalizeIncomingNote(parsed) {
   const add = parsed?.note?.add;
-  const ev = Array.isArray(add) ? add[0] : null;
+  const ev = Array.isArray(add) ? add.find(x => x?.type === "incoming") : null;
 
   if (!ev || !ev.params?.text) return null;
 
