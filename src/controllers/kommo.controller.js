@@ -48,7 +48,8 @@ export async function kommoWebhook(req, res) {
 
       const normalized = normalizeIncomingMessage(parsed);
 
-      if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
+      if (normalized.origin === 'waba' && normalized.element_id === '18792880') {
+        console.log('Llego...');
         await processKommoMessage(normalized);
         console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
       }
