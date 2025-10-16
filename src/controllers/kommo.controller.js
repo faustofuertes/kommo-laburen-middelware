@@ -1,5 +1,5 @@
 import { parseIncoming } from "../utils/parser.js";
-import { normalizeIncomingMessage } from "../utils/normalizer.js";
+import { normalizeIncomingMessage, normalizeIncomingNote } from "../utils/normalizer.js";
 import { startLaburenConversation, continueLaburenConversation } from "../services/laburen.service.js";
 import { getContact, addNoteToLead } from "../services/kommo.service.js";
 import { sendWppMessage } from "../services/whatsapp.services.js";
