@@ -45,31 +45,27 @@ export async function kommoWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
 
     if (parsed?.message?.add) {
-      const normalized = normalizeIncomingMessage(parsed);
-      if (!normalized) return;
 
-      console.log("📩 Es un mensaje:", normalized.text, "de:", normalized.contact_id);
-      // await processKommoMessage(normalized);
+      const normalized = normalizeIncomingMessage(parsed);
+
+      if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
+        await processKommoMessage(normalized);
+        console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+      }
 
     } else if (parsed?.leads?.note) {
+
       const noteObj = parsed.leads.note[0]?.note;
-      if (!noteObj || !noteObj.text) return;
-      console.log("📝 Nota de lead:", noteObj.text, "de:", noteObj.element_id);
-      // await processKommoNote(noteObj.text.toLowerCase().trim(), noteObj.element_id);
+      await processKommoNote(noteObj.text.toLowerCase().trim(), noteObj.element_id);
+
     } else {
       console.log("⚠️ Payload recibido pero no es mensaje ni nota:", parsed);
     }
-
-    //if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
-    //   await processKommoMessage(normalized);
-    //   console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
-    // }
 
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
   }
 }
-
 
 export async function processKommoMessage(normalized) {
 
