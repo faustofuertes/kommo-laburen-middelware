@@ -8,7 +8,29 @@ const idsPausados = new Set();
 const conversationMap = new Map();
 const whiteList = [];
 
-export async function kommoWebhook(req, res) {
+export async function kommoNoteWebhook(req, res) {
+  try {
+    const contentType = req.headers["content-type"] || "";
+    const raw =
+      typeof req.body === "string"
+        ? req.body
+        : req.body
+          ? req.body.toString("utf8")
+          : "";
+
+    const parsed = parseIncoming(raw, contentType);
+    const normalized = normalizeIncomingMessage(parsed);
+    const note = (normalized?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
+
+    console.log('Llego la nota: ', note);
+    processKommoNote(note);
+
+  } catch (error) {
+    console.error('Error kommoNoteWebhook', error);
+  }
+}
+
+export async function kommoMessageWebhook(req, res) {
   res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
 
   try {
@@ -23,6 +45,7 @@ export async function kommoWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
+    console.log('Llego el mensaje: ', normalized.text);
     if (normalized.origin === 'waba' && normalized.element_id === '18712314') {
       await processKommoMessage(normalized);
       console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
@@ -35,26 +58,6 @@ export async function kommoWebhook(req, res) {
 }
 
 export async function processKommoMessage(normalized) {
-
-  const note = (normalized?.leads?.note?.[0]?.note?.text || "").toLowerCase().trim();
-
-  // --- Pausa/Reanudación ---
-  if (note === "agente pausar") {
-    idsPausados.add(normalized.element_id);
-    console.log(`El elemento ${normalized.element_id} ha sido pausado.`);
-    return;
-  } else if (note === "agente seguir") {
-    idsPausados.delete(normalized.element_id);
-    console.log(`El elemento ${normalized.element_id} ha sido reanudado.`);
-    return;
-  }
-
-  if (idsPausados.has(normalized.element_id)) {
-    console.log(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
-    return;
-  }
-
-  console.log(`El elemento ${normalized.element_id} no está pausado. Se enviará a Laburen.`);
 
   const contact = await getContact(normalized.contact_id);
 
@@ -95,4 +98,18 @@ export async function processKommoMessage(normalized) {
 
   // Mandar nota a Kommo
   await addNoteToLead(normalized.element_id, answer, contact.name);
+}
+
+export async function processKommoNote(note) {
+
+  if (note === "agente pausar") {
+    idsPausados.add(normalized.element_id);
+    console.log(`El elemento ${normalized.element_id} ha sido pausado.`);
+    return;
+  } else if (note === "agente seguir") {
+    idsPausados.delete(normalized.element_id);
+    console.log(`El elemento ${normalized.element_id} ha sido reanudado.`);
+    return;
+  }
+
 }
