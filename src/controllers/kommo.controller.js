@@ -23,7 +23,6 @@ export async function kommoWebhook(req, res) {
     if (parsed?.message?.add) {
 
       const normalized = normalizeIncomingMessage(parsed);
-
       if (normalized.origin === 'waba' && normalized.element_id === '18639150') {
         await processKommoMessage(normalized);
         console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
@@ -32,7 +31,8 @@ export async function kommoWebhook(req, res) {
     } else if (parsed?.leads?.note) {
 
       const noteObj = parsed.leads.note[0]?.note;
-      await processKommoNote(noteObj.text.toLowerCase().trim(), noteObj.element_id);
+      processKommoNote(noteObj.text.toLowerCase().trim(), noteObj.element_id);
+      console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
 
     } else {
       console.log("⚠️ Payload recibido pero no es mensaje ni nota:", parsed);
@@ -81,22 +81,28 @@ export async function processKommoMessage(normalized) {
   console.log(`${contact.name}: ${normalized.text}`);
   console.log(`Agente: ${answer}`);
 
-  // Mandar a WPP
   await sendWppMessage(contact.phone, answer);
-
-  // Mandar nota a Kommo
   await addNoteToLead(normalized.element_id, answer, contact.name);
 }
 
-export async function processKommoNote(note, element_id) {
+function processKommoNote(note, element_id) {
 
   if (note === "agente pausar") {
-    idsPausados.add(element_id);
-    console.log(`El elemento ${element_id} ha sido pausado.`);
+    if (idsPausados.has(element_id)) {
+      console.log(`⚠️ Este elemento ${element_id} ya esta pausado.`);
+    }
+    else {
+      idsPausados.add(element_id);
+      console.log(`⏸️ El elemento ${element_id} ha sido pausado.`);
+    }
     return;
   } else if (note === "agente seguir") {
-    idsPausados.delete(element_id);
-    console.log(`El elemento ${element_id} ha sido reanudado.`);
+    if (idsPausados.has(element_id)) {
+      idsPausados.delete(element_id);
+      console.log(`▶️ El elemento ${element_id} ha sido reanudado.`);
+    } else {
+      console.log(`⚠️ Este elemento ${element_id} no esta pausado.`);
+    }
     return;
   }
 
