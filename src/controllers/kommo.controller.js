@@ -51,6 +51,7 @@ export async function processKommoMessage(normalized) {
   let data;
 
   if (idsPausados.has(normalized.element_id)) {
+    console.log(`⚠️ El elemento ${normalized.element_id} esta pausado, no se enviara Laburen.`);
     return;
   }
 
