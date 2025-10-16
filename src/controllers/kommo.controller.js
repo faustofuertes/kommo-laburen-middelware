@@ -8,30 +8,6 @@ const idsPausados = new Set();
 const conversationMap = new Map();
 const whiteList = [];
 
-/*export async function kommoNoteWebhook(req, res) {
-  res.sendStatus(204);
-
-  try {
-    const contentType = req.headers["content-type"] || "";
-    const raw =
-      typeof req.body === "string"
-        ? req.body
-        : req.body
-          ? req.body.toString("utf8")
-          : "";
-
-    const parsed = parseIncoming(raw, contentType);
-    const normalized = normalizeIncomingNote(parsed);
-
-    console.log("🟣 Llegó la nota:", normalized.text, "de:", normalized.element_id);
-
-    await processKommoNote(normalized.text.toLowerCase().trim(), normalized.element_id);
-
-  } catch (error) {
-    console.error("Error kommoNoteWebhook:", error);
-  }
-}*/
-
 export async function kommoWebhook(req, res) {
   res.sendStatus(204); // responder rápido
 
@@ -47,12 +23,12 @@ export async function kommoWebhook(req, res) {
     if (parsed?.message?.add) {
 
       const normalized = normalizeIncomingMessage(parsed);
+      console.log('Llego un mensaje: ', normalized);
 
-      if (normalized.origin === 'waba' && normalized.element_id === '18792880') {
-        console.log('Llego...');
-        await processKommoMessage(normalized);
-        console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
-      }
+      //if (normalized.origin === 'waba' && normalized.element_id === '18792880') {
+      //  await processKommoMessage(normalized);
+      //  console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+      // }
 
     } else if (parsed?.leads?.note) {
 
