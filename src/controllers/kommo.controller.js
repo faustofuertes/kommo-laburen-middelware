@@ -6,6 +6,7 @@ import { sendWppMessage } from "../services/whatsapp.services.js";
 
 const idsPausados = new Set();
 const conversationMap = new Map();
+const whiteList = [];
 
 export async function kommoWebhook(req, res) {
   res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
@@ -46,11 +47,8 @@ export async function processKommoMessage(normalized) {
     idsPausados.delete(normalized.element_id);
     console.log(`El elemento ${normalized.element_id} ha sido reanudado.`);
     return;
-  } else {
-    console.log(`El elemento ${normalized.element_id} no tiene acción de pausa/reanudación.`);
   }
 
-  // --- Ignorar si está pausado ---
   if (idsPausados.has(normalized.element_id)) {
     console.log(`El elemento ${normalized.element_id} está pausado. No se enviará a Laburen.`);
     return;
@@ -89,23 +87,12 @@ export async function processKommoMessage(normalized) {
 
   const answer = (data?.answer || "").trim();
 
-  // --- Payload a WhatsApp ---
-  const payloadWpp = {
-    to: contact.phone,
-    message: answer,
-    contactName: contact.name,
-    leadId: normalized.element_id,
-    chatId: normalized.chat_id
-  };
-
-  console.log("WPP PAYLOAD →", payloadWpp);
+  console.log(`${contact.name}: ${normalized.text}`);
+  console.log(`Agente: ${answer}`);
 
   // Mandar a WPP
-  // await sendWppMessage(payloadWpp);
   await sendWppMessage(contact.phone, answer);
-  //console.log('Enviando mensaje a wpp');
 
   // Mandar nota a Kommo
   await addNoteToLead(normalized.element_id, `🤖 Agente Laburen: ${answer}`);
-  //console.log('Enviando mensaje a Kommo');
 }

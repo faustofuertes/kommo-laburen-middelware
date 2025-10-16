@@ -56,6 +56,7 @@ export async function addNoteToLead(leadId, noteText) {
         }
       );
   
+      console.log('✅ Mensaje enviado a Kommo');
       return response.data;
     } catch (error) {
       console.error("Error al agregar nota al lead:", error.response?.data || error.message);

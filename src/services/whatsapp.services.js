@@ -23,6 +23,8 @@ export async function sendWppMessage(to, message) {
     }),
   });
 
+  console.log('✅ Mensaje enviado a WhatsApp');
+
   if (!res.ok) {
     const error = await res.text();
     console.error("Error sending message.", error);
