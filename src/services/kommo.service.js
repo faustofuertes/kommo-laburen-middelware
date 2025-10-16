@@ -37,29 +37,30 @@ export async function getContact(contactId) {
 }
 
 export async function addNoteToLead(leadId, noteText) {
-    try {
-      const response = await axios.post(
-        `${KOMMO_BASE_URL}/api/v4/leads/${leadId}/notes`,
-        [
-          {
-            note_type: "common",
-            params: {
-              text: noteText
-            }
-          }
-        ],
+  try {
+    const response = await axios.post(
+      `${KOMMO_BASE_URL}/api/v4/leads/${leadId}/notes`,
+      [
         {
-          headers: {
-            Authorization: `Bearer ${KOMMO_LONG_DURATION_TOKEN}`,
-            "Content-Type": "application/json"
+          note_type: "sms_out",
+          "params": {
+            "text": "SMS",
+            "phone": "+14155551234"
           }
         }
-      );
-  
-      console.log('✅ Mensaje enviado a Kommo');
-      return response.data;
-    } catch (error) {
-      console.error("Error al agregar nota al lead:", error.response?.data || error.message);
-      throw error;
-    }
+      ],
+      {
+        headers: {
+          Authorization: `Bearer ${KOMMO_LONG_DURATION_TOKEN}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+
+    console.log('✅ Mensaje enviado a Kommo');
+    return response.data;
+  } catch (error) {
+    console.error("Error al agregar nota al lead:", error.response?.data || error.message);
+    throw error;
   }
+}
