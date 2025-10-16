@@ -42,10 +42,10 @@ export async function addNoteToLead(leadId, noteText) {
       `${KOMMO_BASE_URL}/api/v4/leads/${leadId}/notes`,
       [
         {
-          note_type: "service_message",
+          note_type: "extended_service_message",
           "params": {
             "service": "Example service",
-            "text": "Note text"
+            "text": noteText
           }
         }
       ],
