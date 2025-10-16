@@ -51,6 +51,8 @@ export async function kommoWebhook(req, res) {
       console.log('Es un mensaje')
     } else if (parsed?.note?.add) {
       console.log('Es una nota')
+    } else {
+      console.log('No es ninguno')
     }
 
     //if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
