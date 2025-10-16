@@ -50,6 +50,10 @@ export async function processKommoMessage(normalized) {
   let conversationId;
   let data;
 
+  if (idsPausados.has(normalized.element_id)) {
+    return;
+  }
+
   // --- Manejo de conversación en Laburen ---
   if (conversationMap.has(normalized.contact_id)) {
     conversationId = conversationMap.get(normalized.contact_id);
@@ -58,14 +62,12 @@ export async function processKommoMessage(normalized) {
     data = await continueLaburenConversation({
       conversationId,
       query: normalized.text,
-      visitorId: normalized.contact_id,
-      //metadata: { kommo: { contactId: normalized.contact_id, leadId: normalized.element_id, chatId: normalized.chat_id } }
+      visitorId: normalized.contact_id
     });
   } else {
     data = await startLaburenConversation({
       query: normalized.text,
-      visitorId: normalized.contact_id,
-      //metadata: { kommo: { contactId: normalized.contact_id, leadId: normalized.element_id, chatId: normalized.chat_id } }
+      visitorId: normalized.contact_id
     });
 
     conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
