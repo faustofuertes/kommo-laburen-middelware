@@ -36,16 +36,16 @@ export async function getContact(contactId) {
   }
 }
 
-export async function addNoteToLead(leadId, noteText) {
+export async function addNoteToLead(leadId, noteText, leadName) {
   try {
     const response = await axios.post(
       `${KOMMO_BASE_URL}/api/v4/leads/${leadId}/notes`,
       [
         {
-          note_type: "extended_service_message",
+          note_type: "sms_out",
           "params": {
-            "service": "Example service",
-            "text": noteText
+            "text": noteText,
+            "phone": leadName
           }
         }
       ],

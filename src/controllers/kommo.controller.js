@@ -94,5 +94,5 @@ export async function processKommoMessage(normalized) {
   await sendWppMessage(contact.phone, answer);
 
   // Mandar nota a Kommo
-  await addNoteToLead(normalized.element_id, `🤖 Agente Laburen: ${answer}`);
+  await addNoteToLead(normalized.element_id, `🤖 Agente Laburen: ${answer}`, contact.name);
 }
