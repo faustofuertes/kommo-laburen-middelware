@@ -23,12 +23,12 @@ export async function kommoWebhook(req, res) {
     if (parsed?.message?.add) {
 
       const normalized = normalizeIncomingMessage(parsed);
-      console.log('Llego un mensaje: ', normalized);
 
-      //if (normalized.origin === 'waba' && normalized.element_id === '18792880') {
-      //  await processKommoMessage(normalized);
-      //  console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
-      // }
+      if (normalized.origin === 'waba' && normalized.element_id === '18639150') {
+        console.log('Llego un mensaje: ', normalized);
+        //await processKommoMessage(normalized);
+        console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+      }
 
     } else if (parsed?.leads?.note) {
 
