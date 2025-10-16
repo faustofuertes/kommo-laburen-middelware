@@ -25,8 +25,7 @@ export async function kommoWebhook(req, res) {
       const normalized = normalizeIncomingMessage(parsed);
 
       if (normalized.origin === 'waba' && normalized.element_id === '18639150') {
-        console.log('Llego un mensaje: ', normalized);
-        //await processKommoMessage(normalized);
+        await processKommoMessage(normalized);
         console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
       }
 
@@ -60,13 +59,13 @@ export async function processKommoMessage(normalized) {
       conversationId,
       query: normalized.text,
       visitorId: normalized.contact_id,
-      metadata: { kommo: { contactId: normalized.contact_id, leadId: normalized.element_id, chatId: normalized.chat_id } }
+      //metadata: { kommo: { contactId: normalized.contact_id, leadId: normalized.element_id, chatId: normalized.chat_id } }
     });
   } else {
     data = await startLaburenConversation({
       query: normalized.text,
       visitorId: normalized.contact_id,
-      metadata: { kommo: { contactId: normalized.contact_id, leadId: normalized.element_id, chatId: normalized.chat_id } }
+      //metadata: { kommo: { contactId: normalized.contact_id, leadId: normalized.element_id, chatId: normalized.chat_id } }
     });
 
     conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
