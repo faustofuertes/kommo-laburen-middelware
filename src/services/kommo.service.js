@@ -45,7 +45,6 @@ export async function addNoteToLead(leadId, noteText, leadName) {
           note_type: "sms_out",
           "params": {
             "text": noteText,
-            "phone": leadName
           }
         }
       ],
