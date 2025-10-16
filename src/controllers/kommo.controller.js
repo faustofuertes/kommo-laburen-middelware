@@ -8,7 +8,7 @@ const idsPausados = new Set();
 const conversationMap = new Map();
 const whiteList = [];
 
-export async function kommoNoteWebhook(req, res) {
+/*export async function kommoNoteWebhook(req, res) {
   res.sendStatus(204);
 
   try {
@@ -30,9 +30,9 @@ export async function kommoNoteWebhook(req, res) {
   } catch (error) {
     console.error("Error kommoNoteWebhook:", error);
   }
-}
+}*/
 
-export async function kommoMessageWebhook(req, res) {
+export async function kommoWebhook(req, res) {
   res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
 
   try {
@@ -47,13 +47,16 @@ export async function kommoMessageWebhook(req, res) {
     const parsed = parseIncoming(raw, contentType);
     const normalized = normalizeIncomingMessage(parsed);
 
-    
-    // if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
-    if (normalized.element_id === '18766174') {
-      console.log(normalized);
-      //await processKommoMessage(normalized);
-      console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+    if (parsed?.message?.add) {
+      console.log('Es un mensaje')
+    } else if (parsed?.note?.add) {
+      console.log('Es una nota')
     }
+
+    //if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
+    //   await processKommoMessage(normalized);
+    //   console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+    // }
 
   } catch (err) {
     console.error("Error en kommoMessageWebhook:", err);
