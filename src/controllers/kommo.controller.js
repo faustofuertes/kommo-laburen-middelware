@@ -26,6 +26,7 @@ export async function kommoWebhook(req, res) {
       const contact = await getContact(normalized.contact_id);
       if (normalized.origin === 'waba' && whiteList.includes(contact.phone)) {
         await processKommoMessage(normalized);
+        console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
       }
 
     } else if (parsed?.leads?.note) {
@@ -39,8 +40,8 @@ export async function kommoWebhook(req, res) {
 
   } catch (err) {
     console.error("Error en kommoWebhook:", err);
+    console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
   }
-  console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
 
 }
 
@@ -99,6 +100,7 @@ function processKommoNote(note, element_id) {
       idsPausados.add(element_id);
       console.log(`⏸️ El elemento ${element_id} ha sido pausado.`);
     }
+    console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
   } else if (note === "agente seguir") {
     if (idsPausados.has(element_id)) {
       idsPausados.delete(element_id);
@@ -106,6 +108,7 @@ function processKommoNote(note, element_id) {
     } else {
       console.log(`⚠️ Este elemento ${element_id} no esta pausado.`);
     }
+    console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
   }
   return;
 }
