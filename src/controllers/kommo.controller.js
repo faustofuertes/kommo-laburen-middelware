@@ -33,26 +33,34 @@ const whiteList = [];
 }*/
 
 export async function kommoWebhook(req, res) {
-  res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
+  res.sendStatus(204); // responder rápido
 
   try {
     const contentType = req.headers["content-type"] || "";
     const raw =
       typeof req.body === "string"
         ? req.body
-        : req.body
-          ? req.body.toString("utf8")
-          : "";
+        : req.body?.toString("utf8") || "";
 
     const parsed = parseIncoming(raw, contentType);
-    const normalized = normalizeIncomingMessage(parsed);
 
+    // Detectar tipo primero
     if (parsed?.message?.add) {
-      console.log('Es un mensaje')
+      const normalized = normalizeIncomingMessage(parsed);
+      if (!normalized) return;
+
+      console.log("📩 Es un mensaje:", normalized.text, "de:", normalized.contact_id);
+      await processKommoMessage(normalized);
+
     } else if (parsed?.note?.add) {
-      console.log('Es una nota')
+      const normalized = normalizeIncomingNote(parsed);
+      if (!normalized) return;
+
+      console.log("📝 Es una nota:", normalized.text, "de:", normalized.element_id);
+      await processKommoNote(normalized.text.toLowerCase().trim(), normalized.element_id);
+
     } else {
-      console.log('No es ninguno')
+      console.log("⚠️ Payload recibido pero no es mensaje ni nota:", parsed);
     }
 
     //if (normalized.origin === 'waba' && normalized.element_id === '18766174') {
@@ -61,10 +69,10 @@ export async function kommoWebhook(req, res) {
     // }
 
   } catch (err) {
-    console.error("Error en kommoMessageWebhook:", err);
-    console.log('--------------------------------------------------------------------------------------------------------------------------------------------------------');
+    console.error("Error en kommoWebhook:", err);
   }
 }
+
 
 export async function processKommoMessage(normalized) {
 
