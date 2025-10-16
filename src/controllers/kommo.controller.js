@@ -31,6 +31,8 @@ export async function kommoNoteWebhook(req, res) {
 }
 
 export async function kommoMessageWebhook(req, res) {
+  console.log("🚀 Kommo hizo POST a /kommo/webhook/message");
+
   res.sendStatus(204); // Responde rápido para que Kommo no reenvíe
 
   try {
