@@ -60,13 +60,6 @@ A continuación se explica el uso y propósito de cada uno.
   - Se utiliza para pausar o reanudar interacciones (`agente pausar` / `agente seguir`).  
   - Sirve como referencia en logs y payloads.
 
-### 🔹 `chat_id`
-- **Origen:** Kommo  
-- **Descripción:** ID del chat o canal dentro de Kommo (por ejemplo, el hilo de WhatsApp).  
-- **Uso:**  
-  - Permite mantener la relación con la conversación exacta en Kommo.  
-  - Se incluye como metadata al enviar datos al Agente de Laburen.
-
 ### 🔹 `conversationMap`
 - **Origen:** Middleware (local)  
 - **Descripción:** Mapa en memoria que asocia `contact_id` → `conversationId` de Laburen.  

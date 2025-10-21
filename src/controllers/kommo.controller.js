@@ -1,6 +1,6 @@
 import { parseIncoming } from "../utils/parser.js";
 import { normalizeIncomingMessage } from "../utils/normalizer.js";
-import { startLaburenConversation, continueLaburenConversation } from "../services/laburen.service.js";
+import { sendMessageToLaburenAgent } from "../services/laburen.service.js";
 import { getContact, addNoteToLead } from "../services/kommo.service.js";
 import { sendWppMessage } from "../services/whatsapp.services.js";
 
@@ -62,18 +62,18 @@ async function processKommoMessage(normalized) {
     conversationId = conversationMap.get(normalized.contact_id);
     console.log(`Reusando conversación existente para contact_id ${normalized.contact_id} -> ${conversationId}`);
 
-    data = await continueLaburenConversation({
-      conversationId,
+    data = await sendMessageToLaburenAgent({
+      conversationId: conversationId,
       query: normalized.text,
       visitorId: normalized.contact_id
     });
   } else {
-    data = await startLaburenConversation({
+    data = await sendMessageToLaburenAgent({
       query: normalized.text,
       visitorId: normalized.contact_id
     });
 
-    conversationId = data?.conversationId || `${normalized.contact_id}-${Date.now()}`;
+    conversationId = data?.conversationId;
     conversationMap.set(normalized.contact_id, conversationId);
 
     console.log(`Nueva conversación asignada para contact_id ${normalized.contact_id}: ${conversationId}`);
